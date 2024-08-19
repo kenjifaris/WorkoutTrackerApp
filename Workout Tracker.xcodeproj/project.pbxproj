@@ -24,6 +24,7 @@
 		458039272C73F4F400D84C94 /* SampleWorkoutTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */; };
 		458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */; };
 		4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */; };
+		4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392C2C73FCF800D84C94 /* CalendarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 		458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleWorkoutTemplates.swift; sourceTree = "<group>"; };
 		458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTemplateCardView.swift; sourceTree = "<group>"; };
+		4580392C2C73FCF800D84C94 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 				4580391A2C73E9C900D84C94 /* MainTabView.swift */,
 				4580391C2C73EA1A00D84C94 /* ContentView.swift */,
 				458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */,
+				4580392C2C73FCF800D84C94 /* CalendarView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -218,6 +221,7 @@
 			files = (
 				458039012C73E8F600D84C94 /* ProfileView.swift in Sources */,
 				458039212C73F21E00D84C94 /* SampleExercises.swift in Sources */,
+				4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */,
 				458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */,
 				458039192C73E9BE00D84C94 /* MeasureView.swift in Sources */,
 				458039252C73F4C200D84C94 /* WorkoutTemplate.swift in Sources */,
