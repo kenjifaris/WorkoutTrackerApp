@@ -11,7 +11,8 @@ import SwiftUI
 struct Workout_TrackerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView() // This should be loading MainTabView
         }
     }
 }
+
