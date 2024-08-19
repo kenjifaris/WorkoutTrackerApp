@@ -20,6 +20,10 @@
 		4580391F2C73F1AC00D84C94 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580391E2C73F1AC00D84C94 /* Exercise.swift */; };
 		458039212C73F21E00D84C94 /* SampleExercises.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039202C73F21E00D84C94 /* SampleExercises.swift */; };
 		458039232C73F23600D84C94 /* ExerciseRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039222C73F23600D84C94 /* ExerciseRowView.swift */; };
+		458039252C73F4C200D84C94 /* WorkoutTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039242C73F4C200D84C94 /* WorkoutTemplate.swift */; };
+		458039272C73F4F400D84C94 /* SampleWorkoutTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */; };
+		458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */; };
+		4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +41,10 @@
 		4580391E2C73F1AC00D84C94 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
 		458039202C73F21E00D84C94 /* SampleExercises.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleExercises.swift; sourceTree = "<group>"; };
 		458039222C73F23600D84C94 /* ExerciseRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseRowView.swift; sourceTree = "<group>"; };
+		458039242C73F4C200D84C94 /* WorkoutTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTemplate.swift; sourceTree = "<group>"; };
+		458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleWorkoutTemplates.swift; sourceTree = "<group>"; };
+		458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTemplateCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +107,7 @@
 				458039182C73E9BE00D84C94 /* MeasureView.swift */,
 				4580391A2C73E9C900D84C94 /* MainTabView.swift */,
 				4580391C2C73EA1A00D84C94 /* ContentView.swift */,
+				458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -107,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				458039222C73F23600D84C94 /* ExerciseRowView.swift */,
+				4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -116,6 +126,8 @@
 			children = (
 				4580391E2C73F1AC00D84C94 /* Exercise.swift */,
 				458039202C73F21E00D84C94 /* SampleExercises.swift */,
+				458039242C73F4C200D84C94 /* WorkoutTemplate.swift */,
+				458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -206,9 +218,13 @@
 			files = (
 				458039012C73E8F600D84C94 /* ProfileView.swift in Sources */,
 				458039212C73F21E00D84C94 /* SampleExercises.swift in Sources */,
+				458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */,
 				458039192C73E9BE00D84C94 /* MeasureView.swift in Sources */,
+				458039252C73F4C200D84C94 /* WorkoutTemplate.swift in Sources */,
+				458039272C73F4F400D84C94 /* SampleWorkoutTemplates.swift in Sources */,
 				4580391D2C73EA1A00D84C94 /* ContentView.swift in Sources */,
 				458039122C73E99400D84C94 /* HistoryView.swift in Sources */,
+				4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */,
 				458039142C73E99E00D84C94 /* WorkoutView.swift in Sources */,
 				458039232C73F23600D84C94 /* ExerciseRowView.swift in Sources */,
 				4580391B2C73E9C900D84C94 /* MainTabView.swift in Sources */,
