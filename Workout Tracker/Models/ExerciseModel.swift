@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ExerciseModel: Codable, Identifiable {
+struct ExerciseModel: Codable, Identifiable, Equatable {
     let id: String
     let name: String
     let target: String
@@ -23,7 +23,13 @@ struct ExerciseModel: Codable, Identifiable {
         case equipment
         case gifUrl = "gifUrl"
     }
+
+    // Equatable conformance
+    static func ==(lhs: ExerciseModel, rhs: ExerciseModel) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
+
 
 
 

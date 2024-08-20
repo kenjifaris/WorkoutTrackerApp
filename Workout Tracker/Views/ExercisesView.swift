@@ -13,11 +13,13 @@ struct ExercisesView: View {
     @State private var searchText: String = ""
     @State private var errorMessage: ErrorWrapper?
     @State private var isLoading = false
+    @State private var offset: Int = 0 // Track the offset
 
     var body: some View {
         NavigationView {
             VStack {
                 SearchBar(text: $searchText, onTextChanged: filterExercises)
+                
                 List(filteredExercises) { exercise in
                     NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
                         VStack(alignment: .leading) {
@@ -39,10 +41,15 @@ struct ExercisesView: View {
                         }
                         .padding(.vertical)
                     }
+                    .onAppear {
+                        if exercise == filteredExercises.last { // Load more exercises when reaching the last item
+                            loadExercises()
+                        }
+                    }
                 }
                 .navigationTitle("Exercises")
                 .onAppear {
-                    loadExercises() // Fix: Remove the offset argument to match the expected closure type.
+                    loadExercises() // Use the cached data if available
                 }
                 .alert(item: $errorMessage) { error in
                     Alert(
@@ -64,17 +71,18 @@ struct ExercisesView: View {
         }
     }
 
-    private func loadExercises(offset: Int = 0) {
+    private func loadExercises() {
+        guard !isLoading else { return } // Prevent multiple simultaneous loads
         isLoading = true
         ExerciseDBService().fetchExercises(offset: offset) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let exercises):
-                    self.exercises += exercises
+                case .success(let newExercises):
+                    self.exercises += newExercises
                     self.filteredExercises = self.exercises
-                    if exercises.count == 50 { // Continue loading if the max limit is reached
-                        loadExercises(offset: offset + 50)
+                    if newExercises.count == 50 { // Continue loading if the max limit is reached
+                        self.offset += 50 // Increase the offset for the next batch
                     }
                 case .failure(let error):
                     self.errorMessage = ErrorWrapper(message: error.localizedDescription)
@@ -84,10 +92,21 @@ struct ExercisesView: View {
     }
 }
 
-struct ErrorWrapper: Identifiable {
+struct ErrorWrapper: Identifiable {  // Include this struct definition if not already included
     let id = UUID()
     let message: String
 }
+
+struct ExercisesView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExercisesView()
+    }
+}
+
+
+
+
+
 
 
 
