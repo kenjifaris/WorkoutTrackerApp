@@ -27,6 +27,8 @@
 		4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392C2C73FCF800D84C94 /* CalendarView.swift */; };
 		458039332C74198F00D84C94 /* ExerciseDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039322C74198F00D84C94 /* ExerciseDBService.swift */; };
 		458039352C7419CB00D84C94 /* ExerciseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039342C7419CB00D84C94 /* ExerciseModel.swift */; };
+		458039372C750F2B00D84C94 /* SearchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039362C750F2B00D84C94 /* SearchBarView.swift */; };
+		458039392C750F3700D84C94 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039382C750F3700D84C94 /* ExerciseDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +53,8 @@
 		4580392C2C73FCF800D84C94 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		458039322C74198F00D84C94 /* ExerciseDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExerciseDBService.swift; path = "Workout Tracker/Models/ExerciseDBService.swift"; sourceTree = SOURCE_ROOT; };
 		458039342C7419CB00D84C94 /* ExerciseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModel.swift; sourceTree = "<group>"; };
+		458039362C750F2B00D84C94 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
+		458039382C750F3700D84C94 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +119,8 @@
 				4580391C2C73EA1A00D84C94 /* ContentView.swift */,
 				458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */,
 				4580392C2C73FCF800D84C94 /* CalendarView.swift */,
+				458039362C750F2B00D84C94 /* SearchBarView.swift */,
+				458039382C750F3700D84C94 /* ExerciseDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -226,6 +232,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				458039012C73E8F600D84C94 /* ProfileView.swift in Sources */,
+				458039392C750F3700D84C94 /* ExerciseDetailView.swift in Sources */,
 				458039212C73F21E00D84C94 /* SampleExercises.swift in Sources */,
 				4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */,
 				458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */,
@@ -237,6 +244,7 @@
 				458039122C73E99400D84C94 /* HistoryView.swift in Sources */,
 				4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */,
 				458039142C73E99E00D84C94 /* WorkoutView.swift in Sources */,
+				458039372C750F2B00D84C94 /* SearchBarView.swift in Sources */,
 				458039332C74198F00D84C94 /* ExerciseDBService.swift in Sources */,
 				458039232C73F23600D84C94 /* ExerciseRowView.swift in Sources */,
 				4580391B2C73E9C900D84C94 /* MainTabView.swift in Sources */,
