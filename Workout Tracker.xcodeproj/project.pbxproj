@@ -94,6 +94,7 @@
 				4580390D2C73E91900D84C94 /* Components */,
 				458039102C73E92F00D84C94 /* Services */,
 				458039022C73E8F700D84C94 /* Assets.xcassets */,
+				4580393F2C75497B00D84C94 /* Configurations */,
 				458039042C73E8F700D84C94 /* Preview Content */,
 			);
 			path = "Workout Tracker";
@@ -159,6 +160,13 @@
 				458039322C74198F00D84C94 /* ExerciseDBService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		4580393F2C75497B00D84C94 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

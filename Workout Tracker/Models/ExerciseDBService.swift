@@ -9,30 +9,24 @@ import Foundation
 
 class ExerciseDBService {
     private let baseURL = "https://exercisedb.p.rapidapi.com/exercises"
-    private let cacheKey = "cachedExercises"
+    private let apiKey = "3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947"  // Replace with your actual API key
+    private let limit = 50  // Number of exercises per page
 
-    // Fetch Exercises with Caching
-    func fetchExercises(offset: Int = 0, completion: @escaping (Result<[ExerciseModel], Error>) -> Void) {
-        // Check if cached data exists
-        if offset == 0, let cachedData = UserDefaults.standard.data(forKey: cacheKey) {
-            do {
-                let cachedExercises = try JSONDecoder().decode([ExerciseModel].self, from: cachedData)
-                completion(.success(cachedExercises))
-                return
-            } catch {
-                // Handle error if cache data is corrupted
-                print("Failed to decode cache data: \(error)")
-            }
-        }
-        
-        // Build URL with offset for pagination
-        guard let url = URL(string: "\(baseURL)?offset=\(offset)&limit=50") else {  // Added `limit=50`
+    // Function to fetch all exercises
+    func fetchAllExercises(completion: @escaping (Result<[ExerciseModel], Error>) -> Void) {
+        fetchExercises(offset: 0, accumulatedExercises: [], completion: completion)
+    }
+
+    // Recursive function to handle pagination and fetch all exercises
+    private func fetchExercises(offset: Int, accumulatedExercises: [ExerciseModel], completion: @escaping (Result<[ExerciseModel], Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)?offset=\(offset)&limit=\(limit)") else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
         }
 
         var request = URLRequest(url: url)
-        request.setValue("3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947", forHTTPHeaderField: "X-RapidAPI-Key")
+        request.httpMethod = "GET"
+        request.setValue(apiKey, forHTTPHeaderField: "X-RapidAPI-Key")
         request.setValue("exercisedb.p.rapidapi.com", forHTTPHeaderField: "X-RapidAPI-Host")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -49,23 +43,29 @@ class ExerciseDBService {
             do {
                 let exercises = try JSONDecoder().decode([ExerciseModel].self, from: data)
                 
-                // Cache data if it's the first page
-                if offset == 0 {
-                    UserDefaults.standard.set(data, forKey: self.cacheKey)
-                }
+                // Accumulate exercises
+                let allExercises = accumulatedExercises + exercises
                 
-                completion(.success(exercises))
+                // If the API returns fewer items than the limit, we've reached the last page
+                if exercises.count < self.limit {
+                    completion(.success(allExercises))
+                } else {
+                    // Otherwise, fetch the next page
+                    self.fetchExercises(offset: offset + self.limit, accumulatedExercises: allExercises, completion: completion)
+                }
             } catch {
                 completion(.failure(error))
             }
         }.resume()
     }
-    
-    // Clear Cache Method
-    func clearCache() {
-        UserDefaults.standard.removeObject(forKey: cacheKey)
-    }
 }
+
+
+
+
+
+
+
 
 
 
