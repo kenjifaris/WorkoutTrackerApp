@@ -25,6 +25,8 @@
 		458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */; };
 		4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */; };
 		4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4580392C2C73FCF800D84C94 /* CalendarView.swift */; };
+		458039332C74198F00D84C94 /* ExerciseDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039322C74198F00D84C94 /* ExerciseDBService.swift */; };
+		458039352C7419CB00D84C94 /* ExerciseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039342C7419CB00D84C94 /* ExerciseModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +49,8 @@
 		458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTemplateCardView.swift; sourceTree = "<group>"; };
 		4580392C2C73FCF800D84C94 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		458039322C74198F00D84C94 /* ExerciseDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExerciseDBService.swift; path = "Workout Tracker/Models/ExerciseDBService.swift"; sourceTree = SOURCE_ROOT; };
+		458039342C7419CB00D84C94 /* ExerciseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +135,7 @@
 				458039202C73F21E00D84C94 /* SampleExercises.swift */,
 				458039242C73F4C200D84C94 /* WorkoutTemplate.swift */,
 				458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */,
+				458039342C7419CB00D84C94 /* ExerciseModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -145,6 +150,7 @@
 		458039102C73E92F00D84C94 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				458039322C74198F00D84C94 /* ExerciseDBService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -226,10 +232,12 @@
 				458039192C73E9BE00D84C94 /* MeasureView.swift in Sources */,
 				458039252C73F4C200D84C94 /* WorkoutTemplate.swift in Sources */,
 				458039272C73F4F400D84C94 /* SampleWorkoutTemplates.swift in Sources */,
+				458039352C7419CB00D84C94 /* ExerciseModel.swift in Sources */,
 				4580391D2C73EA1A00D84C94 /* ContentView.swift in Sources */,
 				458039122C73E99400D84C94 /* HistoryView.swift in Sources */,
 				4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */,
 				458039142C73E99E00D84C94 /* WorkoutView.swift in Sources */,
+				458039332C74198F00D84C94 /* ExerciseDBService.swift in Sources */,
 				458039232C73F23600D84C94 /* ExerciseRowView.swift in Sources */,
 				4580391B2C73E9C900D84C94 /* MainTabView.swift in Sources */,
 				458039172C73E9B500D84C94 /* ExercisesView.swift in Sources */,

@@ -15,25 +15,25 @@ struct MainTabView: View {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
-            
+
             HistoryView()
                 .tabItem {
                     Image(systemName: "clock.fill")
                     Text("History")
                 }
-            
+
             WorkoutView()
                 .tabItem {
                     Image(systemName: "plus.circle.fill")
                     Text("Workout")
                 }
-            
+
             ExercisesView()
                 .tabItem {
                     Image(systemName: "figure.walk")
                     Text("Exercises")
                 }
-            
+
             MeasureView()
                 .tabItem {
                     Image(systemName: "ruler.fill")
@@ -48,6 +48,9 @@ struct MainTabView_Previews: PreviewProvider {
         MainTabView()
     }
 }
+
+
+
 
 
 

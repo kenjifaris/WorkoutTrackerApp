@@ -8,64 +8,54 @@
 import SwiftUI
 
 struct ExercisesView: View {
-    @State private var searchText = ""
-    
-    // Organized exercises by their first letter
-    private var organizedExercises: [String: [Exercise]] {
-        Dictionary(grouping: SampleExercises.exercises) { exercise in
-            String(exercise.name.prefix(1)).uppercased()
-        }
-    }
-    
-    private var filteredExercises: [Exercise] {
-        if searchText.isEmpty {
-            return SampleExercises.exercises
-        } else {
-            return SampleExercises.exercises.filter { exercise in
-                exercise.name.lowercased().contains(searchText.lowercased()) ||
-                exercise.category.lowercased().contains(searchText.lowercased())
-            }
-        }
-    }
-    
+    @State private var exercises: [ExerciseModel] = []
+    @State private var errorMessage: ErrorWrapper?
+
     var body: some View {
         NavigationView {
-            List {
-                // A-Z Sections
-                ForEach(organizedExercises.keys.sorted(), id: \.self) { key in
-                    Section(header: Text(key)) {
-                        ForEach(organizedExercises[key]!) { exercise in
-                            ExerciseRowView(exercise: exercise)
-                        }
+            List(exercises) { exercise in
+                VStack(alignment: .leading) {
+                    Text(exercise.name)
+                        .font(.headline)
+                    Text("Target: \(exercise.target)")
+                        .font(.subheadline)
+                    Text("Equipment: \(exercise.equipment)")
+                        .font(.subheadline)
+
+                    AsyncImage(url: URL(string: exercise.gifUrl)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 150)
+                    } placeholder: {
+                        ProgressView()
                     }
                 }
+                .padding(.vertical)
             }
-            .listStyle(GroupedListStyle())
             .navigationTitle("Exercises")
-            .searchable(text: $searchText, prompt: "Search Exercises")
+            .onAppear(perform: loadExercises)
+            .alert(item: $errorMessage) { error in
+                Alert(
+                    title: Text("Error"),
+                    message: Text(error.message),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
-}
 
-struct ExerciseRowView: View {
-    let exercise: Exercise
-    
-    var body: some View {
-        HStack {
-            Image(exercise.imageName)
-                .resizable()
-                .frame(width: 50, height: 50)
-                .cornerRadius(8)
-            
-            VStack(alignment: .leading) {
-                Text(exercise.name)
-                    .font(.headline)
-                Text(exercise.category)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+    private func loadExercises() {
+        ExerciseDBService().fetchExercises { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let exercises):
+                    self.exercises = exercises
+                case .failure(let error):
+                    self.errorMessage = ErrorWrapper(message: error.localizedDescription)
+                }
             }
         }
-        .padding(.vertical, 4)
     }
 }
 
@@ -74,6 +64,23 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+struct ErrorWrapper: Identifiable {
+    let id = UUID()
+    let message: String
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
