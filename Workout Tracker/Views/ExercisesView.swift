@@ -10,6 +10,7 @@ import SwiftUI
 struct ExercisesView: View {
     @State private var exercises: [ExerciseModel] = []
     @State private var errorMessage: ErrorWrapper?
+    @State private var isLoading = false
 
     var body: some View {
         NavigationView {
@@ -34,7 +35,9 @@ struct ExercisesView: View {
                 .padding(.vertical)
             }
             .navigationTitle("Exercises")
-            .onAppear(perform: loadExercises)
+            .onAppear {
+                loadExercises()
+            }
             .alert(item: $errorMessage) { error in
                 Alert(
                     title: Text("Error"),
@@ -43,14 +46,20 @@ struct ExercisesView: View {
                 )
             }
         }
+        .overlay(isLoading ? ProgressView("Loading...") : nil)
     }
 
-    private func loadExercises() {
-        ExerciseDBService().fetchExercises { result in
+    private func loadExercises(offset: Int = 0) {
+        isLoading = true
+        ExerciseDBService().fetchExercises(offset: offset) { result in
             DispatchQueue.main.async {
+                isLoading = false
                 switch result {
                 case .success(let exercises):
-                    self.exercises = exercises
+                    self.exercises += exercises
+                    if exercises.count == 50 { // Continue loading if the max limit is reached
+                        loadExercises(offset: offset + 50)
+                    }
                 case .failure(let error):
                     self.errorMessage = ErrorWrapper(message: error.localizedDescription)
                 }
@@ -69,6 +78,9 @@ struct ErrorWrapper: Identifiable {
     let id = UUID()
     let message: String
 }
+
+
+
 
 
 
