@@ -29,6 +29,7 @@
 		458039352C7419CB00D84C94 /* ExerciseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039342C7419CB00D84C94 /* ExerciseModel.swift */; };
 		458039372C750F2B00D84C94 /* SearchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039362C750F2B00D84C94 /* SearchBarView.swift */; };
 		458039392C750F3700D84C94 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039382C750F3700D84C94 /* ExerciseDetailView.swift */; };
+		458039482C766A0A00D84C94 /* AdminExerciseManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039472C766A0A00D84C94 /* AdminExerciseManagerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		458039342C7419CB00D84C94 /* ExerciseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModel.swift; sourceTree = "<group>"; };
 		458039362C750F2B00D84C94 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
 		458039382C750F3700D84C94 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		458039472C766A0A00D84C94 /* AdminExerciseManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminExerciseManagerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */,
+				458039462C7669E600D84C94 /* Admin */,
 				4580390C2C73E91300D84C94 /* Views */,
 				4580390E2C73E92300D84C94 /* Models */,
 				4580390F2C73E92900D84C94 /* ViewModels */,
@@ -169,6 +172,14 @@
 			path = Configurations;
 			sourceTree = "<group>";
 		};
+		458039462C7669E600D84C94 /* Admin */ = {
+			isa = PBXGroup;
+			children = (
+				458039472C766A0A00D84C94 /* AdminExerciseManagerView.swift */,
+			);
+			path = Admin;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -248,6 +259,7 @@
 				458039252C73F4C200D84C94 /* WorkoutTemplate.swift in Sources */,
 				458039272C73F4F400D84C94 /* SampleWorkoutTemplates.swift in Sources */,
 				458039352C7419CB00D84C94 /* ExerciseModel.swift in Sources */,
+				458039482C766A0A00D84C94 /* AdminExerciseManagerView.swift in Sources */,
 				4580391D2C73EA1A00D84C94 /* ContentView.swift in Sources */,
 				458039122C73E99400D84C94 /* HistoryView.swift in Sources */,
 				4580392B2C73F9E500D84C94 /* WorkoutTemplateCardView.swift in Sources */,

@@ -9,7 +9,7 @@ import Foundation
 
 class ExerciseDBService {
     private let baseURL = "https://exercisedb.p.rapidapi.com/exercises"
-    private let apiKey = "3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947"  // Replace with your actual API key
+    private let apiKey = "3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947"
     private let limit = 50  // Number of exercises per page
 
     // Function to fetch all exercises
@@ -59,6 +59,7 @@ class ExerciseDBService {
         }.resume()
     }
 }
+
 
 
 
