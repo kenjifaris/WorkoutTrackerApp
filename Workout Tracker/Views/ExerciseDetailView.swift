@@ -45,8 +45,24 @@ struct ExerciseDetailView: View {
 
 struct ExerciseDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        ExerciseDetailView(exercise: ExerciseModel(id: "1", name: "Push Up", target: "Chest", bodyPart: "Chest", equipment: "Body weight", gifUrl: "https://someurl.com/pushup.gif"))
+        ExerciseDetailView(exercise: ExerciseModel(
+            id: "1",
+            name: "Push Up",
+            target: "Chest",
+            bodyPart: "Chest",
+            equipment: "Body weight",
+            gifUrl: "https://someurl.com/pushup.gif",
+            category: "Strength",
+            secondaryMuscles: ["Triceps", "Shoulders"],
+            instructions: [
+                "Start in a high plank position with your hands placed slightly wider than shoulder-width apart.",
+                "Lower your body until your chest nearly touches the floor.",
+                "Push back up to the starting position.",
+                "Repeat for the desired number of repetitions."
+            ]
+        ))
     }
 }
+
 
 

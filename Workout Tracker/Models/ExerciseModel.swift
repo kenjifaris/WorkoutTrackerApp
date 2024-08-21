@@ -7,28 +7,25 @@
 
 import Foundation
 
-struct ExerciseModel: Codable, Identifiable, Equatable {
+struct ExerciseModel: Identifiable, Equatable, Codable {
     let id: String
     let name: String
     let target: String
     let bodyPart: String
     let equipment: String
     let gifUrl: String
+    let category: String?
+    let secondaryMuscles: [String]?
+    let instructions: [String]?
     
-    enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case target
-        case bodyPart
-        case equipment
-        case gifUrl = "gifUrl"
-    }
-
-    // Equatable conformance
-    static func ==(lhs: ExerciseModel, rhs: ExerciseModel) -> Bool {
+    // Conformance to Equatable
+    static func == (lhs: ExerciseModel, rhs: ExerciseModel) -> Bool {
         return lhs.id == rhs.id
     }
 }
+
+
+
 
 
 
