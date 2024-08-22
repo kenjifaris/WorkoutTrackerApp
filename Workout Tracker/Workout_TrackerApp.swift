@@ -6,13 +6,20 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
-struct Workout_TrackerApp: App {
+struct WorkoutTrackerApp: App {
+    init() {
+        FirebaseApp.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView() // This should be loading MainTabView
+            ContentView() // Your initial view
         }
     }
 }
+
+
 
