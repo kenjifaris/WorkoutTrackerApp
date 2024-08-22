@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 struct AdminExerciseManagerView: View {
     @State private var exercises: [ExerciseModel] = []
@@ -79,13 +81,13 @@ struct AdminExerciseManagerView: View {
             }
             .navigationTitle("Admin Exercise Manager")
             .onAppear {
-                loadSavedExercises() // Load previously saved selections
+                loadSavedExercisesFromFirebase() // Load previously saved selections
                 fetchExercises()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save Changes") {
-                        saveSelectedExercises()
+                        saveSelectedExercisesToFirebase(exercises.filter { selectedExercises.contains($0.id) })
                     }
                 }
             }
@@ -113,59 +115,47 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    private func saveSelectedExercises() {
-        // Apply edited names, body parts, and equipment
-        for (id, newName) in editedNames {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].name = newName
-            }
-        }
-        for (id, newBodyPart) in editedBodyParts {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].bodyPart = newBodyPart
-            }
-        }
-        for (id, newEquipment) in editedEquipments {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].equipment = newEquipment
-            }
-        }
-
-        // Filter out unselected exercises
-        let finalExercises = exercises.filter { selectedExercises.contains($0.id) }
-
-        // Save `finalExercises` to a JSON file
-        saveExercisesToLocalStorage(finalExercises)
-    }
-
-    private func saveExercisesToLocalStorage(_ exercises: [ExerciseModel]) {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+    // This is where you place the saveSelectedExercisesToFirebase function
+    private func saveSelectedExercisesToFirebase(_ exercises: [ExerciseModel]) {
+        let db = Firestore.firestore()
 
         do {
-            let data = try encoder.encode(exercises)
-            if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
-                try data.write(to: fileURL)
-                print("Exercises saved to \(fileURL)")
+            let data = try JSONEncoder().encode(exercises)
+            if let exercisesDict = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [[String: Any]] {
+                print("Prepared exercises to save: \(exercisesDict)")
+
+                db.collection("selected_exercises").document("user_exercises").setData(["exercises": exercisesDict]) { error in
+                    if let error = error {
+                        print("Failed to save exercises to Firebase: \(error)")
+                    } else {
+                        print("Exercises successfully saved to Firebase")
+                    }
+                }
+            } else {
+                print("Failed to serialize exercises to dictionary format")
             }
         } catch {
-            print("Failed to save exercises: \(error)")
+            print("Failed to encode exercises: \(error)")
         }
     }
 
-    private func loadSavedExercises() {
-        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let decoder = JSONDecoder()
-                let savedExercises = try decoder.decode([ExerciseModel].self, from: data)
-                self.selectedExercises = Set(savedExercises.map { $0.id })
-                self.exercises = savedExercises
-                print("Loaded saved exercises from \(fileURL)")
-            } catch {
-                print("Failed to load saved exercises: \(error)")
+    private func loadSavedExercisesFromFirebase() {
+        let db = Firestore.firestore()
+
+        db.collection("selected_exercises").document("user_exercises").getDocument { document, error in
+            if let document = document, document.exists {
+                if let exercisesData = document.data()?["exercises"] as? [[String: Any]] {
+                    do {
+                        let data = try JSONSerialization.data(withJSONObject: exercisesData, options: [])
+                        let savedExercises = try JSONDecoder().decode([ExerciseModel].self, from: data)
+                        self.selectedExercises = Set(savedExercises.map { $0.id })
+                        self.exercises = savedExercises
+                    } catch {
+                        print("Failed to decode exercises from Firebase: \(error)")
+                    }
+                }
+            } else {
+                print("No selected exercises found in Firebase")
             }
         }
     }
@@ -176,6 +166,9 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
+
+
 
 
 

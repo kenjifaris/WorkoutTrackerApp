@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct ExercisesView: View {
     @State private var exercises: [ExerciseModel] = []
@@ -123,7 +124,7 @@ struct ExercisesView: View {
             }
             .navigationTitle("Exercises")
             .onAppear {
-                loadExercises()
+                loadSelectedExercisesFromFirebase()
             }
         }
     }
@@ -208,22 +209,29 @@ struct ExercisesView: View {
         // Navigate to a summary page or perform the desired action
     }
 
-    private func loadExercises() {
-        isLoading = true
-        ExerciseDBService().fetchAllExercises { result in
-            DispatchQueue.main.async {
-                isLoading = false
-                switch result {
-                case .success(let exercises):
-                    self.exercises = exercises
-                    self.filteredExercises = exercises
-                case .failure(let error):
-                    print("Failed to load exercises: \(error)")
+    private func loadSelectedExercisesFromFirebase() {
+        let db = Firestore.firestore()
+
+        db.collection("selected_exercises").document("user_exercises").getDocument { document, error in
+            if let document = document, document.exists {
+                if let exercisesData = document.data()?["exercises"] as? [[String: Any]] {
+                    do {
+                        let data = try JSONSerialization.data(withJSONObject: exercisesData, options: [])
+                        let savedExercises = try JSONDecoder().decode([ExerciseModel].self, from: data)
+                        self.exercises = savedExercises
+                        self.filteredExercises = savedExercises
+                    } catch {
+                        print("Failed to decode exercises from Firebase: \(error)")
+                    }
                 }
+            } else {
+                print("No selected exercises found in Firebase")
             }
         }
     }
 }
+
+
 
 
 
