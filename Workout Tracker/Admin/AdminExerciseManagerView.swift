@@ -45,14 +45,20 @@ struct AdminExerciseManagerView: View {
                             // Editable text field for exercise name
                             TextField(exercise.name, text: Binding(
                                 get: { editedNames[exercise.id] ?? exercise.name },
-                                set: { editedNames[exercise.id] = $0 }
+                                set: {
+                                    editedNames[exercise.id] = $0
+                                    print("Editing \(exercise.id): Name updated to \($0)")  // Debugging print statement
+                                }
                             ))
                             .textFieldStyle(RoundedBorderTextFieldStyle())
 
                             // Editable text field for body part
                             TextField(exercise.bodyPart, text: Binding(
                                 get: { editedBodyParts[exercise.id] ?? exercise.bodyPart },
-                                set: { editedBodyParts[exercise.id] = $0 }
+                                set: {
+                                    editedBodyParts[exercise.id] = $0
+                                    print("Editing \(exercise.id): Body part updated to \($0)")  // Debugging print statement
+                                }
                             ))
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .foregroundColor(.gray)
@@ -60,7 +66,10 @@ struct AdminExerciseManagerView: View {
                             // Editable text field for equipment
                             TextField(exercise.equipment, text: Binding(
                                 get: { editedEquipments[exercise.id] ?? exercise.equipment },
-                                set: { editedEquipments[exercise.id] = $0 }
+                                set: {
+                                    editedEquipments[exercise.id] = $0
+                                    print("Editing \(exercise.id): Equipment updated to \($0)")  // Debugging print statement
+                                }
                             ))
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .foregroundColor(.gray)
@@ -81,13 +90,13 @@ struct AdminExerciseManagerView: View {
             }
             .navigationTitle("Admin Exercise Manager")
             .onAppear {
-                loadSavedExercisesFromFirebase() // Load previously saved selections
-                fetchExercises()
+                loadSavedExercises() // Load exercises from JSON
+                fetchExercises() // Optionally fetch additional exercises from API
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save Changes") {
-                        saveSelectedExercisesToFirebase(exercises.filter { selectedExercises.contains($0.id) })
+                        saveSelectedExercises() // Save the changes to Firestore
                     }
                 }
             }
@@ -115,20 +124,50 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    // This is where you place the saveSelectedExercisesToFirebase function
-    private func saveSelectedExercisesToFirebase(_ exercises: [ExerciseModel]) {
+    // Function to save edited and selected exercises to Firestore
+    private func saveSelectedExercises() {
+        // Apply edited names, body parts, and equipment
+        for (id, newName) in editedNames {
+            if let index = exercises.firstIndex(where: { $0.id == id }) {
+                exercises[index].name = newName
+                print("Applied edit: Updated \(exercises[index].id) name to \(newName)")  // Debugging print statement
+            }
+        }
+        for (id, newBodyPart) in editedBodyParts {
+            if let index = exercises.firstIndex(where: { $0.id == id }) {
+                exercises[index].bodyPart = newBodyPart
+                print("Applied edit: Updated \(exercises[index].id) body part to \(newBodyPart)")  // Debugging print statement
+            }
+        }
+        for (id, newEquipment) in editedEquipments {
+            if let index = exercises.firstIndex(where: { $0.id == id }) {
+                exercises[index].equipment = newEquipment
+                print("Applied edit: Updated \(exercises[index].id) equipment to \(newEquipment)")  // Debugging print statement
+            }
+        }
+
+        // Filter out unselected exercises
+        let finalExercises = exercises.filter { selectedExercises.contains($0.id) }
+
+        // Save `finalExercises` to Firestore
+        saveExercisesToFirebase(finalExercises)
+    }
+
+    // Function to save exercises to Firestore
+    private func saveExercisesToFirebase(_ exercises: [ExerciseModel]) {
         let db = Firestore.firestore()
 
         do {
             let data = try JSONEncoder().encode(exercises)
             if let exercisesDict = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [[String: Any]] {
-                print("Prepared exercises to save: \(exercisesDict)")
-
-                db.collection("selected_exercises").document("user_exercises").setData(["exercises": exercisesDict]) { error in
+                print("Prepared exercises to save: \(exercisesDict)")  // Debugging print statement
+                db.collection("public").document("user_exercises").setData(["exercises": exercisesDict]) { error in
                     if let error = error {
                         print("Failed to save exercises to Firebase: \(error)")
                     } else {
                         print("Exercises successfully saved to Firebase")
+                        // Fetch immediately after saving to verify
+                        fetchSavedExercisesFromFirebase()
                     }
                 }
             } else {
@@ -139,23 +178,30 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    private func loadSavedExercisesFromFirebase() {
+    private func fetchSavedExercisesFromFirebase() {
         let db = Firestore.firestore()
 
-        db.collection("selected_exercises").document("user_exercises").getDocument { document, error in
+        db.collection("public").document("user_exercises").getDocument { document, error in
             if let document = document, document.exists {
-                if let exercisesData = document.data()?["exercises"] as? [[String: Any]] {
-                    do {
-                        let data = try JSONSerialization.data(withJSONObject: exercisesData, options: [])
-                        let savedExercises = try JSONDecoder().decode([ExerciseModel].self, from: data)
-                        self.selectedExercises = Set(savedExercises.map { $0.id })
-                        self.exercises = savedExercises
-                    } catch {
-                        print("Failed to decode exercises from Firebase: \(error)")
-                    }
-                }
+                print("Document data: \(document.data() ?? [:])")
             } else {
-                print("No selected exercises found in Firebase")
+                print("Document does not exist")
+            }
+        }
+    }
+
+    private func loadSavedExercises() {
+        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
+            do {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                let savedExercises = try decoder.decode([ExerciseModel].self, from: data)
+                self.selectedExercises = Set(savedExercises.map { $0.id })
+                self.exercises = savedExercises
+                print("Loaded saved exercises from \(fileURL)")
+            } catch {
+                print("Failed to load saved exercises: \(error)")
             }
         }
     }
@@ -166,6 +212,10 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
+
+
+
 
 
 

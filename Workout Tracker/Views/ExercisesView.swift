@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Firebase
 import FirebaseFirestore
 
 struct ExercisesView: View {
@@ -124,7 +125,7 @@ struct ExercisesView: View {
             }
             .navigationTitle("Exercises")
             .onAppear {
-                loadSelectedExercisesFromFirebase()
+                loadExercisesFromFirebase()
             }
         }
     }
@@ -209,27 +210,33 @@ struct ExercisesView: View {
         // Navigate to a summary page or perform the desired action
     }
 
-    private func loadSelectedExercisesFromFirebase() {
+    private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
-
-        db.collection("selected_exercises").document("user_exercises").getDocument { document, error in
+        
+        db.collection("public").document("user_exercises").getDocument { document, error in
             if let document = document, document.exists {
-                if let exercisesData = document.data()?["exercises"] as? [[String: Any]] {
-                    do {
-                        let data = try JSONSerialization.data(withJSONObject: exercisesData, options: [])
-                        let savedExercises = try JSONDecoder().decode([ExerciseModel].self, from: data)
-                        self.exercises = savedExercises
-                        self.filteredExercises = savedExercises
-                    } catch {
-                        print("Failed to decode exercises from Firebase: \(error)")
+                do {
+                    if let data = document.data(),
+                       let exercisesArray = data["exercises"] as? [[String: Any]] {
+                        let jsonData = try JSONSerialization.data(withJSONObject: exercisesArray, options: [])
+                        let exercises = try JSONDecoder().decode([ExerciseModel].self, from: jsonData)
+                        DispatchQueue.main.async {
+                            self.exercises = exercises
+                            self.filteredExercises = exercises
+                        }
+                    } else {
+                        print("No exercises found in Firebase")
                     }
+                } catch {
+                    print("Failed to decode exercises: \(error)")
                 }
             } else {
-                print("No selected exercises found in Firebase")
+                print("Document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
 }
+
 
 
 

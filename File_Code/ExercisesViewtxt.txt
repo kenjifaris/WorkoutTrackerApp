@@ -1,0 +1,8 @@
+This is what is says in the Xcode console..... 
+
+
+nw_read_request_report [C3] Receive failed with error "Operation timed out"
+nw_read_request_report [C3] Receive failed with error "Operation timed out"
+nw_read_request_report [C3] Receive failed with error "Operation timed out"
+nw_endpoint_flow_fillout_data_transfer_snapshot copy_info() returned NULL
+nw_connection_copy_connected_local_endpoint_block_invoke [C3] Connection has no local endpoint
