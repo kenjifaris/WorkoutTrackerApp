@@ -90,13 +90,12 @@ struct AdminExerciseManagerView: View {
             }
             .navigationTitle("Admin Exercise Manager")
             .onAppear {
-                loadSavedExercises() // Load exercises from JSON
-                fetchExercises() // Optionally fetch additional exercises from API
+                fetchExercises() // Fetch exercises from Firebase
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save Changes") {
-                        saveSelectedExercises() // Save the changes to Firestore and JSON file
+                        saveSelectedExercises() // Save the changes directly to Firestore
                     }
                 }
             }
@@ -109,6 +108,8 @@ struct AdminExerciseManagerView: View {
             case .success(let exercises):
                 DispatchQueue.main.async {
                     self.exercises = exercises
+                    // Assuming selected exercises are fetched separately,
+                    // update the selectedExercises set here if needed.
                 }
             case .failure(let error):
                 print("Failed to fetch exercises: \(error)")
@@ -124,25 +125,22 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    // Function to save edited and selected exercises to Firestore and to JSON file
+    // Function to save edited and selected exercises to Firestore
     private func saveSelectedExercises() {
         // Apply edited names, body parts, and equipment
         for (id, newName) in editedNames {
             if let index = exercises.firstIndex(where: { $0.id == id }) {
                 exercises[index].name = newName
-                print("Applied edit: Updated \(exercises[index].id) name to \(newName)")  // Debugging print statement
             }
         }
         for (id, newBodyPart) in editedBodyParts {
             if let index = exercises.firstIndex(where: { $0.id == id }) {
                 exercises[index].bodyPart = newBodyPart
-                print("Applied edit: Updated \(exercises[index].id) body part to \(newBodyPart)")  // Debugging print statement
             }
         }
         for (id, newEquipment) in editedEquipments {
             if let index = exercises.firstIndex(where: { $0.id == id }) {
                 exercises[index].equipment = newEquipment
-                print("Applied edit: Updated \(exercises[index].id) equipment to \(newEquipment)")  // Debugging print statement
             }
         }
 
@@ -151,9 +149,6 @@ struct AdminExerciseManagerView: View {
 
         // Save `finalExercises` to Firestore
         saveExercisesToFirebase(finalExercises)
-
-        // Also save the updated selections to the JSON file
-        saveExercisesToJSONFile(finalExercises)
     }
 
     // Function to save exercises to Firestore
@@ -181,44 +176,15 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    // Function to save exercises to JSON file
-    private func saveExercisesToJSONFile(_ exercises: [ExerciseModel]) {
-        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
-            do {
-                let data = try JSONEncoder().encode(exercises)
-                try data.write(to: fileURL)
-                print("Exercises successfully saved to \(fileURL.path)")
-            } catch {
-                print("Failed to save exercises to JSON file: \(error)")
-            }
-        }
-    }
-
     private func fetchSavedExercisesFromFirebase() {
         let db = Firestore.firestore()
 
         db.collection("public").document("user_exercises").getDocument { document, error in
             if let document = document, document.exists {
                 print("Document data: \(document.data() ?? [:])")
+                // Optionally update local state with the fetched data if needed
             } else {
                 print("Document does not exist")
-            }
-        }
-    }
-
-    private func loadSavedExercises() {
-        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let decoder = JSONDecoder()
-                let savedExercises = try decoder.decode([ExerciseModel].self, from: data)
-                self.selectedExercises = Set(savedExercises.map { $0.id })
-                self.exercises = savedExercises
-                print("Loaded saved exercises from \(fileURL)")
-            } catch {
-                print("Failed to load saved exercises: \(error)")
             }
         }
     }
@@ -229,6 +195,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
