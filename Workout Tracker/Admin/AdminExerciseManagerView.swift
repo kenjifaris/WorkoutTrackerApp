@@ -90,7 +90,7 @@ struct AdminExerciseManagerView: View {
             }
             .navigationTitle("Admin Exercise Manager")
             .onAppear {
-                fetchExercises() // Fetch exercises from Firebase
+                loadData() // Fetch exercises and selections
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -102,17 +102,40 @@ struct AdminExerciseManagerView: View {
         }
     }
 
+    private func loadData() {
+        // Fetch exercises from API
+        fetchExercises()
+
+        // Fetch selected exercises from Firestore
+        fetchSelectedExercises()
+    }
+
     private func fetchExercises() {
         ExerciseDBService().fetchAllExercises { result in
             switch result {
             case .success(let exercises):
                 DispatchQueue.main.async {
                     self.exercises = exercises
-                    // Assuming selected exercises are fetched separately,
-                    // update the selectedExercises set here if needed.
                 }
             case .failure(let error):
                 print("Failed to fetch exercises: \(error)")
+            }
+        }
+    }
+
+    private func fetchSelectedExercises() {
+        let db = Firestore.firestore()
+        let docRef = db.collection("public").document("user_exercises")
+
+        docRef.getDocument { document, error in
+            if let document = document, document.exists {
+                if let data = document.data(), let savedExercises = data["exercises"] as? [[String: Any]] {
+                    DispatchQueue.main.async {
+                        self.selectedExercises = Set(savedExercises.compactMap { $0["id"] as? String })
+                    }
+                }
+            } else {
+                print("No document found or error: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
@@ -123,69 +146,29 @@ struct AdminExerciseManagerView: View {
         } else {
             selectedExercises.insert(exercise.id)
         }
+        
+        // Save immediately after toggling
+        saveSelectedExercises()
     }
 
-    // Function to save edited and selected exercises to Firestore
     private func saveSelectedExercises() {
-        // Apply edited names, body parts, and equipment
-        for (id, newName) in editedNames {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].name = newName
-            }
-        }
-        for (id, newBodyPart) in editedBodyParts {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].bodyPart = newBodyPart
-            }
-        }
-        for (id, newEquipment) in editedEquipments {
-            if let index = exercises.firstIndex(where: { $0.id == id }) {
-                exercises[index].equipment = newEquipment
-            }
-        }
-
-        // Filter out unselected exercises
-        let finalExercises = exercises.filter { selectedExercises.contains($0.id) }
-
-        // Save `finalExercises` to Firestore
-        saveExercisesToFirebase(finalExercises)
-    }
-
-    // Function to save exercises to Firestore
-    private func saveExercisesToFirebase(_ exercises: [ExerciseModel]) {
         let db = Firestore.firestore()
 
+        // Prepare data to save
+        let selectedExerciseModels = exercises.filter { selectedExercises.contains($0.id) }
         do {
-            let data = try JSONEncoder().encode(exercises)
+            let data = try JSONEncoder().encode(selectedExerciseModels)
             if let exercisesDict = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [[String: Any]] {
-                print("Prepared exercises to save: \(exercisesDict)")  // Debugging print statement
                 db.collection("public").document("user_exercises").setData(["exercises": exercisesDict]) { error in
                     if let error = error {
                         print("Failed to save exercises to Firebase: \(error)")
                     } else {
                         print("Exercises successfully saved to Firebase")
-                        // Fetch immediately after saving to verify
-                        fetchSavedExercisesFromFirebase()
                     }
                 }
-            } else {
-                print("Failed to serialize exercises to dictionary format")
             }
         } catch {
             print("Failed to encode exercises: \(error)")
-        }
-    }
-
-    private func fetchSavedExercisesFromFirebase() {
-        let db = Firestore.firestore()
-
-        db.collection("public").document("user_exercises").getDocument { document, error in
-            if let document = document, document.exists {
-                print("Document data: \(document.data() ?? [:])")
-                // Optionally update local state with the fetched data if needed
-            } else {
-                print("Document does not exist")
-            }
         }
     }
 }
@@ -195,6 +178,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
