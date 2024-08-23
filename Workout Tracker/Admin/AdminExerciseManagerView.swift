@@ -92,6 +92,8 @@ struct AdminExerciseManagerView: View {
             .onAppear {
                 loadSavedExercises() // Load exercises from JSON
                 fetchExercises() // Optionally fetch additional exercises from API
+                
+                printDocumentsDirectoryPath() // Print the Documents directory path
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -205,6 +207,13 @@ struct AdminExerciseManagerView: View {
             }
         }
     }
+
+    // Function to print the path to the Documents directory
+    private func printDocumentsDirectoryPath() {
+        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            print("Documents Directory Path: \(documentsDirectory.path)")
+        }
+    }
 }
 
 struct AdminExerciseManagerView_Previews: PreviewProvider {
@@ -212,6 +221,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
