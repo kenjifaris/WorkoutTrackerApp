@@ -92,13 +92,11 @@ struct AdminExerciseManagerView: View {
             .onAppear {
                 loadSavedExercises() // Load exercises from JSON
                 fetchExercises() // Optionally fetch additional exercises from API
-                
-                printDocumentsDirectoryPath() // Print the Documents directory path
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save Changes") {
-                        saveSelectedExercises() // Save the changes to Firestore
+                        saveSelectedExercises() // Save the changes to Firestore and JSON file
                     }
                 }
             }
@@ -126,7 +124,7 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    // Function to save edited and selected exercises to Firestore
+    // Function to save edited and selected exercises to Firestore and to JSON file
     private func saveSelectedExercises() {
         // Apply edited names, body parts, and equipment
         for (id, newName) in editedNames {
@@ -153,6 +151,9 @@ struct AdminExerciseManagerView: View {
 
         // Save `finalExercises` to Firestore
         saveExercisesToFirebase(finalExercises)
+
+        // Also save the updated selections to the JSON file
+        saveExercisesToJSONFile(finalExercises)
     }
 
     // Function to save exercises to Firestore
@@ -177,6 +178,20 @@ struct AdminExerciseManagerView: View {
             }
         } catch {
             print("Failed to encode exercises: \(error)")
+        }
+    }
+
+    // Function to save exercises to JSON file
+    private func saveExercisesToJSONFile(_ exercises: [ExerciseModel]) {
+        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let fileURL = documentsDirectory.appendingPathComponent("selected_exercises.json")
+            do {
+                let data = try JSONEncoder().encode(exercises)
+                try data.write(to: fileURL)
+                print("Exercises successfully saved to \(fileURL.path)")
+            } catch {
+                print("Failed to save exercises to JSON file: \(error)")
+            }
         }
     }
 
@@ -207,13 +222,6 @@ struct AdminExerciseManagerView: View {
             }
         }
     }
-
-    // Function to print the path to the Documents directory
-    private func printDocumentsDirectoryPath() {
-        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            print("Documents Directory Path: \(documentsDirectory.path)")
-        }
-    }
 }
 
 struct AdminExerciseManagerView_Previews: PreviewProvider {
@@ -221,6 +229,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
