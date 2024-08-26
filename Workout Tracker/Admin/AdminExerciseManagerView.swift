@@ -98,6 +98,12 @@ struct AdminExerciseManagerView: View {
                         saveSelectedExercises() // Save the changes directly to Firestore
                     }
                 }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Duplicate Document") {
+                        // Example of duplicating the "user_exercises" document with a new ID
+                        duplicateDocument(from: "user_exercises", to: "user_exercises_1", in: "public")
+                    }
+                }
             }
         }
     }
@@ -171,6 +177,31 @@ struct AdminExerciseManagerView: View {
             print("Failed to encode exercises: \(error)")
         }
     }
+
+    // Function to duplicate a document
+    private func duplicateDocument(from sourceDocID: String, to targetDocID: String, in collection: String) {
+        let db = Firestore.firestore()
+        let sourceDocRef = db.collection(collection).document(sourceDocID)
+        let targetDocRef = db.collection(collection).document(targetDocID)
+        
+        sourceDocRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                // Get the data from the source document
+                if let data = document.data() {
+                    // Set the data to the target document
+                    targetDocRef.setData(data) { error in
+                        if let error = error {
+                            print("Error duplicating document: \(error.localizedDescription)")
+                        } else {
+                            print("Document successfully duplicated!")
+                        }
+                    }
+                }
+            } else {
+                print("Source document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
 }
 
 struct AdminExerciseManagerView_Previews: PreviewProvider {
@@ -178,6 +209,8 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
+
 
 
 

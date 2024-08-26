@@ -213,7 +213,7 @@ struct ExercisesView: View {
     private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
         
-        db.collection("public").document("user_exercises").getDocument { document, error in
+        db.collection("public").document("user_exercises_1").getDocument { document, error in
             if let document = document, document.exists {
                 do {
                     if let data = document.data(),
