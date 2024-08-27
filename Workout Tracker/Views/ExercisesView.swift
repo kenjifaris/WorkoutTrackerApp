@@ -14,15 +14,15 @@ struct ExercisesView: View {
     @State private var filteredExercises: [ExerciseModel] = []
     @State private var searchText: String = ""
     @State private var selectedBodyPart: String? = nil
-    @State private var selectedCategory: String? = nil
+    @State private var selectedEquipment: String? = nil
     @State private var selectedExercises: [ExerciseModel] = []
     @State private var isLoading = false
-    
+
     // State to manage sheet presentation
     @State private var isBodyPartSheetPresented = false
-    @State private var isCategorySheetPresented = false
+    @State private var isEquipmentSheetPresented = false
     @State private var bodyParts: [String] = []
-    @State private var categories: [String] = []
+    @State private var equipments: [String] = []
 
     var body: some View {
         NavigationView {
@@ -30,7 +30,7 @@ struct ExercisesView: View {
                 // Search Bar
                 SearchBar(text: $searchText, onTextChanged: filterExercises)
                     .padding(.top)
-                
+
                 // Filter Buttons
                 HStack(spacing: 16) {
                     Button(action: {
@@ -58,28 +58,28 @@ struct ExercisesView: View {
                             }
                         }
                     }
-                    
+
                     Button(action: {
-                        fetchCategories()
+                        fetchEquipments()
                     }) {
-                        Text(selectedCategory ?? "Any Category")
+                        Text(selectedEquipment ?? "Any Equipment")
                             .font(.subheadline)
                             .padding()
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
-                    .sheet(isPresented: $isCategorySheetPresented) {
+                    .sheet(isPresented: $isEquipmentSheetPresented) {
                         List {
-                            Button("Any Category") {
-                                selectedCategory = nil
+                            Button("Any Equipment") {
+                                selectedEquipment = nil
                                 filterExercises(searchText)
-                                isCategorySheetPresented = false
+                                isEquipmentSheetPresented = false
                             }
-                            ForEach(categories, id: \.self) { category in
-                                Button(category) {
-                                    selectedCategory = category
+                            ForEach(equipments, id: \.self) { equipment in
+                                Button(equipment) {
+                                    selectedEquipment = equipment
                                     filterExercises(searchText)
-                                    isCategorySheetPresented = false
+                                    isEquipmentSheetPresented = false
                                 }
                             }
                         }
@@ -92,14 +92,14 @@ struct ExercisesView: View {
                 List(filteredExercises) { exercise in
                     HStack {
                         ExerciseRowView(exercise: exercise)
-                        
+
                         Spacer()
-                        
+
                         // Add button
                         Button(action: {
                             addExercise(exercise)
                         }) {
-                            Image(systemName: "plus.circle.fill")
+                            Image(systemName: selectedExercises.contains(exercise) ? "checkmark.circle.fill" : "circle")
                                 .foregroundColor(.green)
                                 .font(.title2)
                         }
@@ -131,72 +131,46 @@ struct ExercisesView: View {
     }
 
     private func fetchBodyParts() {
-        guard let url = URL(string: "https://exercisedb.p.rapidapi.com/exercises/bodyPartList") else { return }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947", forHTTPHeaderField: "X-RapidAPI-Key")
-        request.setValue("exercisedb.p.rapidapi.com", forHTTPHeaderField: "X-RapidAPI-Host")
-        
-        isLoading = true
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                isLoading = false
-                if let data = data {
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        print("Response: \(responseString)")
+        let db = Firestore.firestore()
+        db.collection("public").document("user_exercises_2").getDocument { (document, error) in
+            if let document = document, document.exists {
+                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
+                    let bodyPartsSet = Set(exercisesArray.compactMap { $0["bodyPart"] as? String })
+                    DispatchQueue.main.async {
+                        self.bodyParts = Array(bodyPartsSet).sorted()
+                        self.isBodyPartSheetPresented = true // Show sheet after fetching data
                     }
-                    do {
-                        let bodyPartsResponse = try JSONDecoder().decode([String].self, from: data)
-                        self.bodyParts = bodyPartsResponse
-                        self.isBodyPartSheetPresented = true
-                    } catch {
-                        print("Failed to decode body parts: \(error)")
-                    }
-                } else if let error = error {
-                    print("Failed to fetch body parts: \(error)")
                 }
+            } else {
+                print("Failed to fetch body parts: \(error?.localizedDescription ?? "Unknown error")")
             }
-        }.resume()
+        }
     }
 
-    private func fetchCategories() {
-        guard let url = URL(string: "https://exercisedb.p.rapidapi.com/exercises/equipmentList") else { return }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("3f9441b434msh1e9312855d9a072p1806fcjsn190e9e43c947", forHTTPHeaderField: "X-RapidAPI-Key")
-        request.setValue("exercisedb.p.rapidapi.com", forHTTPHeaderField: "X-RapidAPI-Host")
-        
-        isLoading = true
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                isLoading = false
-                if let data = data {
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        print("Response: \(responseString)")
+    private func fetchEquipments() {
+        let db = Firestore.firestore()
+        db.collection("public").document("user_exercises_2").getDocument { (document, error) in
+            if let document = document, document.exists {
+                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
+                    let equipmentsSet = Set(exercisesArray.compactMap { $0["equipment"] as? String })
+                    DispatchQueue.main.async {
+                        self.equipments = Array(equipmentsSet).sorted()
+                        self.isEquipmentSheetPresented = true // Show sheet after fetching data
                     }
-                    do {
-                        let categoriesResponse = try JSONDecoder().decode([String].self, from: data)
-                        self.categories = categoriesResponse
-                        self.isCategorySheetPresented = true
-                    } catch {
-                        print("Failed to decode categories: \(error)")
-                    }
-                } else if let error = error {
-                    print("Failed to fetch categories: \(error)")
                 }
+            } else {
+                print("Failed to fetch equipment: \(error?.localizedDescription ?? "Unknown error")")
             }
-        }.resume()
+        }
     }
 
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
             let matchesBodyPart = selectedBodyPart == nil || exercise.bodyPart == selectedBodyPart
-            let matchesCategory = selectedCategory == nil || exercise.category == selectedCategory
+            let matchesEquipment = selectedEquipment == nil || exercise.equipment == selectedEquipment
             let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
 
-            return matchesBodyPart && matchesCategory && matchesText
+            return matchesBodyPart && matchesEquipment && matchesText
         }
     }
 
@@ -212,7 +186,7 @@ struct ExercisesView: View {
 
     private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
-        
+
         db.collection("public").document("user_exercises_2").getDocument { document, error in
             if let document = document, document.exists {
                 do {
@@ -236,6 +210,9 @@ struct ExercisesView: View {
         }
     }
 }
+
+
+
 
 
 
