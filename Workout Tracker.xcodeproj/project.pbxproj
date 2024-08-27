@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4504F8D12C7E716600DD8383 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4504F8D02C7E716600DD8383 /* FirestoreService.swift */; };
 		458038FF2C73E8F600D84C94 /* Workout_TrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */; };
 		458039012C73E8F600D84C94 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039002C73E8F600D84C94 /* ProfileView.swift */; };
 		458039032C73E8F700D84C94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 458039022C73E8F700D84C94 /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4504F8D02C7E716600DD8383 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
 		458038FB2C73E8F600D84C94 /* Workout Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Workout Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout_TrackerApp.swift; sourceTree = "<group>"; };
 		458039002C73E8F600D84C94 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -56,7 +58,7 @@
 		458039282C73F8D800D84C94 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		4580392A2C73F9E500D84C94 /* WorkoutTemplateCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTemplateCardView.swift; sourceTree = "<group>"; };
 		4580392C2C73FCF800D84C94 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
-		458039322C74198F00D84C94 /* ExerciseDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExerciseDBService.swift; path = "Workout Tracker/Models/ExerciseDBService.swift"; sourceTree = SOURCE_ROOT; };
+		458039322C74198F00D84C94 /* ExerciseDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExerciseDBService.swift; path = "Workout Tracker/Services/ExerciseDBService.swift"; sourceTree = SOURCE_ROOT; };
 		458039342C7419CB00D84C94 /* ExerciseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModel.swift; sourceTree = "<group>"; };
 		458039362C750F2B00D84C94 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
 		458039382C750F3700D84C94 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
@@ -78,6 +80,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4504F8CF2C7E713900DD8383 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				458039322C74198F00D84C94 /* ExerciseDBService.swift */,
+				4504F8D02C7E716600DD8383 /* FirestoreService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		458038F22C73E8F600D84C94 = {
 			isa = PBXGroup;
 			children = (
@@ -104,8 +115,8 @@
 				4580390E2C73E92300D84C94 /* Models */,
 				4580390F2C73E92900D84C94 /* ViewModels */,
 				4580390D2C73E91900D84C94 /* Components */,
-				458039102C73E92F00D84C94 /* Services */,
 				458039022C73E8F700D84C94 /* Assets.xcassets */,
+				4504F8CF2C7E713900DD8383 /* Services */,
 				4580393F2C75497B00D84C94 /* Configurations */,
 				458039042C73E8F700D84C94 /* Preview Content */,
 			);
@@ -164,14 +175,6 @@
 			children = (
 			);
 			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		458039102C73E92F00D84C94 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				458039322C74198F00D84C94 /* ExerciseDBService.swift */,
-			);
-			path = Services;
 			sourceTree = "<group>";
 		};
 		4580393F2C75497B00D84C94 /* Configurations */ = {
@@ -271,6 +274,7 @@
 				458039012C73E8F600D84C94 /* ProfileView.swift in Sources */,
 				458039392C750F3700D84C94 /* ExerciseDetailView.swift in Sources */,
 				458039212C73F21E00D84C94 /* SampleExercises.swift in Sources */,
+				4504F8D12C7E716600DD8383 /* FirestoreService.swift in Sources */,
 				4580392D2C73FCF800D84C94 /* CalendarView.swift in Sources */,
 				458039292C73F8D800D84C94 /* ActiveWorkoutView.swift in Sources */,
 				458039192C73E9BE00D84C94 /* MeasureView.swift in Sources */,

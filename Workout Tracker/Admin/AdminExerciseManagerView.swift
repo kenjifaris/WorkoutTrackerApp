@@ -18,90 +18,101 @@ struct AdminExerciseManagerView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(exercises, id: \.id) { exercise in
-                    HStack {
-                        // Display exercise image or GIF
-                        AsyncImage(url: URL(string: exercise.gifUrl)) { phase in
-                            if let image = phase.image {
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 50, height: 50)
-                                    .cornerRadius(8)
-                            } else if phase.error != nil {
-                                Image(systemName: "photo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 50, height: 50)
-                                    .foregroundColor(.gray)
-                            } else {
-                                ProgressView()
-                                    .frame(width: 50, height: 50)
+            VStack {
+                // Add a button to trigger the bulk update
+                Button("Run Bulk Update") {
+                    FirestoreService.shared.bulkUpdateExerciseNames()
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                
+                List {
+                    ForEach(exercises, id: \.id) { exercise in
+                        HStack {
+                            // Display exercise image or GIF
+                            AsyncImage(url: URL(string: exercise.gifUrl)) { phase in
+                                if let image = phase.image {
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .cornerRadius(8)
+                                } else if phase.error != nil {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.gray)
+                                } else {
+                                    ProgressView()
+                                        .frame(width: 50, height: 50)
+                                }
+                            }
+
+                            VStack(alignment: .leading) {
+                                // Editable text field for exercise name
+                                TextField(exercise.name, text: Binding(
+                                    get: { editedNames[exercise.id] ?? exercise.name },
+                                    set: {
+                                        editedNames[exercise.id] = $0
+                                        print("Editing \(exercise.id): Name updated to \($0)")  // Debugging print statement
+                                    }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                                // Editable text field for body part
+                                TextField(exercise.bodyPart, text: Binding(
+                                    get: { editedBodyParts[exercise.id] ?? exercise.bodyPart },
+                                    set: {
+                                        editedBodyParts[exercise.id] = $0
+                                        print("Editing \(exercise.id): Body part updated to \($0)")  // Debugging print statement
+                                    }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .foregroundColor(.gray)
+
+                                // Editable text field for equipment
+                                TextField(exercise.equipment, text: Binding(
+                                    get: { editedEquipments[exercise.id] ?? exercise.equipment },
+                                    set: {
+                                        editedEquipments[exercise.id] = $0
+                                        print("Editing \(exercise.id): Equipment updated to \($0)")  // Debugging print statement
+                                    }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .foregroundColor(.gray)
+                            }
+
+                            Spacer()
+
+                            // Toggle button to select or deselect exercises
+                            Button(action: {
+                                toggleSelection(for: exercise)
+                            }) {
+                                Image(systemName: selectedExercises.contains(exercise.id) ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(selectedExercises.contains(exercise.id) ? .blue : .gray)
                             }
                         }
-
-                        VStack(alignment: .leading) {
-                            // Editable text field for exercise name
-                            TextField(exercise.name, text: Binding(
-                                get: { editedNames[exercise.id] ?? exercise.name },
-                                set: {
-                                    editedNames[exercise.id] = $0
-                                    print("Editing \(exercise.id): Name updated to \($0)")  // Debugging print statement
-                                }
-                            ))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                            // Editable text field for body part
-                            TextField(exercise.bodyPart, text: Binding(
-                                get: { editedBodyParts[exercise.id] ?? exercise.bodyPart },
-                                set: {
-                                    editedBodyParts[exercise.id] = $0
-                                    print("Editing \(exercise.id): Body part updated to \($0)")  // Debugging print statement
-                                }
-                            ))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .foregroundColor(.gray)
-
-                            // Editable text field for equipment
-                            TextField(exercise.equipment, text: Binding(
-                                get: { editedEquipments[exercise.id] ?? exercise.equipment },
-                                set: {
-                                    editedEquipments[exercise.id] = $0
-                                    print("Editing \(exercise.id): Equipment updated to \($0)")  // Debugging print statement
-                                }
-                            ))
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .foregroundColor(.gray)
-                        }
-
-                        Spacer()
-
-                        // Toggle button to select or deselect exercises
-                        Button(action: {
-                            toggleSelection(for: exercise)
-                        }) {
-                            Image(systemName: selectedExercises.contains(exercise.id) ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(selectedExercises.contains(exercise.id) ? .blue : .gray)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-            .navigationTitle("Admin Exercise Manager")
-            .onAppear {
-                loadData() // Fetch exercises and selections
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save Changes") {
-                        saveSelectedExercises() // Save the changes directly to Firestore
+                        .padding(.vertical, 4)
                     }
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Duplicate Document") {
-                        // Example of duplicating the "user_exercises" document with a new ID
-                        duplicateDocument(from: "user_exercises", to: "user_exercises_3", in: "public")
+                .navigationTitle("Admin Exercise Manager")
+                .onAppear {
+                    loadData() // Fetch exercises and selections
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save Changes") {
+                            saveSelectedExercises() // Save the changes directly to Firestore
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Duplicate Document") {
+                            // Example of duplicating the "user_exercises" document with a new ID
+                            duplicateDocument(from: "user_exercises", to: "user_exercises_3", in: "public")
+                        }
                     }
                 }
             }
@@ -209,6 +220,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 

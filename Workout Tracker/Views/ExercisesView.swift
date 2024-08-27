@@ -26,24 +26,24 @@ struct ExercisesView: View {
 
     // Mapping dictionaries to condense categories
     private let equipmentMapping: [String: String] = [
-        "elliptical machine": "machine",
-        "leverage machine": "machine",
-        "sled machine": "machine",
-        "stepmill machine": "machine",
-        "stationary bike": "machine",
-        "hammer": "other",
-        "trap bar": "other",
-        "rope": "other",
-        "wheel roller": "other",
+        "Elliptical Machine": "Machine",
+        "Leverage Machine": "Machine",
+        "Sled Machine": "Machine",
+        "Stepmill Machine": "Machine",
+        "Stationary Bike": "Machine",
+        "Hammer": "Other",
+        "Trap Bar": "Other",
+        "Rope": "Other",
+        "Wheel Roller": "Other",
         // Add more mappings as needed
     ]
     
     private let bodyPartMapping: [String: String] = [
-        "lower legs": "legs",
-        "upper legs": "legs",
-        "lower arms": "arms",
-        "upper arms": "arms",
-        "waist": "core", // Map 'waist' to 'core'
+        "Lower Legs": "Legs",
+        "Upper Legs": "Legs",
+        "Lower Arms": "Arms",
+        "Upper Arms": "Arms",
+        "Waist": "Core", // Map 'waist' to 'core'
         // Add more mappings as needed
     ]
 
