@@ -17,6 +17,7 @@ struct ExercisesView: View {
     @State private var selectedEquipment: String? = nil
     @State private var selectedExercises: [ExerciseModel] = []
     @State private var isLoading = false
+    @State private var selectedExercise: ExerciseModel?
 
     // State to manage sheet presentation
     @State private var isBodyPartSheetPresented = false
@@ -118,12 +119,12 @@ struct ExercisesView: View {
 
                         Spacer()
 
-                        // Add button
+                        // Info button to view exercise details
                         Button(action: {
-                            addExercise(exercise)
+                            selectedExercise = exercise
                         }) {
-                            Image(systemName: selectedExercises.contains(exercise) ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(.green)
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.blue)
                                 .font(.title2)
                         }
                     }
@@ -149,6 +150,9 @@ struct ExercisesView: View {
             .navigationTitle("Exercises")
             .onAppear {
                 loadExercisesFromFirebase()
+            }
+            .sheet(item: $selectedExercise) { exercise in
+                ExerciseDetailView(exercise: exercise)
             }
         }
     }
@@ -241,6 +245,13 @@ struct ExercisesView: View {
                 print("Document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
+    }
+}
+
+// Preview for ExercisesView
+struct ExercisesView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExercisesView()
     }
 }
 

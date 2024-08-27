@@ -6,63 +6,63 @@
 //
 
 import SwiftUI
+import SDWebImageSwiftUI
 
 struct ExerciseDetailView: View {
-    let exercise: ExerciseModel
+    var exercise: ExerciseModel
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(exercise.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Target: \(exercise.target)")
-                    .font(.title2)
-
-                Text("Body Part: \(exercise.bodyPart)")
-                    .font(.title3)
-
-                Text("Equipment: \(exercise.equipment)")
-                    .font(.title3)
-
-                AsyncImage(url: URL(string: exercise.gifUrl)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity)
-                } placeholder: {
-                    ProgressView()
+        VStack {
+            // TabView to switch between About, History, Charts, PRs
+            TabView {
+                VStack {
+                    // Display the GIF using SDWebImageSwiftUI
+                    if let gifUrl = URL(string: exercise.gifUrl) {
+                        WebImage(url: gifUrl)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding()
+                    }
+                    
+                    // Display the instructions
+                    Text("Instructions")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    ForEach(exercise.instructions ?? [], id: \.self) { instruction in
+                        Text(instruction)
+                            .padding(.vertical, 2)
+                    }
                 }
-
-                Spacer()
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
+                
+                // Other tabs (History, Charts, PRs)
+                Text("History Content")
+                    .tabItem {
+                        Label("History", systemImage: "clock.arrow.circlepath")
+                    }
+                
+                Text("Charts Content")
+                    .tabItem {
+                        Label("Charts", systemImage: "chart.bar")
+                    }
+                
+                Text("PRs Content")
+                    .tabItem {
+                        Label("PRs", systemImage: "rosette")
+                    }
             }
             .padding()
+            .navigationTitle(exercise.name)
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle(exercise.name)
     }
 }
 
-struct ExerciseDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExerciseDetailView(exercise: ExerciseModel(
-            id: "1",
-            name: "Push Up",
-            target: "Chest",
-            bodyPart: "Chest",
-            equipment: "Body weight",
-            gifUrl: "https://someurl.com/pushup.gif",
-            category: "Strength",
-            secondaryMuscles: ["Triceps", "Shoulders"],
-            instructions: [
-                "Start in a high plank position with your hands placed slightly wider than shoulder-width apart.",
-                "Lower your body until your chest nearly touches the floor.",
-                "Push back up to the starting position.",
-                "Repeat for the desired number of repetitions."
-            ]
-        ))
-    }
-}
+
+
 
 
 

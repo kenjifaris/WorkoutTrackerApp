@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		4504F8D12C7E716600DD8383 /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4504F8D02C7E716600DD8383 /* FirestoreService.swift */; };
+		4504F8D42C7E884100DD8383 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D32C7E884100DD8383 /* SDWebImage */; };
+		4504F8D62C7E884100DD8383 /* SDWebImageMapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D52C7E884100DD8383 /* SDWebImageMapKit */; };
+		4504F8D92C7E8A3400DD8383 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D82C7E8A3400DD8383 /* SDWebImageSwiftUI */; };
 		458038FF2C73E8F600D84C94 /* Workout_TrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */; };
 		458039012C73E8F600D84C94 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039002C73E8F600D84C94 /* ProfileView.swift */; };
 		458039032C73E8F700D84C94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 458039022C73E8F700D84C94 /* Assets.xcassets */; };
@@ -71,8 +74,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4504F8D92C7E8A3400DD8383 /* SDWebImageSwiftUI in Frameworks */,
 				45BD11D12C77E06100FA04A6 /* FirebaseAnalytics in Frameworks */,
+				4504F8D62C7E884100DD8383 /* SDWebImageMapKit in Frameworks */,
 				45BD11D32C77E06100FA04A6 /* FirebaseAuth in Frameworks */,
+				4504F8D42C7E884100DD8383 /* SDWebImage in Frameworks */,
 				45BD11D52C77E06100FA04A6 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -212,6 +218,9 @@
 				45BD11D02C77E06100FA04A6 /* FirebaseAnalytics */,
 				45BD11D22C77E06100FA04A6 /* FirebaseAuth */,
 				45BD11D42C77E06100FA04A6 /* FirebaseFirestore */,
+				4504F8D32C7E884100DD8383 /* SDWebImage */,
+				4504F8D52C7E884100DD8383 /* SDWebImageMapKit */,
+				4504F8D82C7E8A3400DD8383 /* SDWebImageSwiftUI */,
 			);
 			productName = "Workout Tracker";
 			productReference = 458038FB2C73E8F600D84C94 /* Workout Tracker.app */;
@@ -243,6 +252,8 @@
 			mainGroup = 458038F22C73E8F600D84C94;
 			packageReferences = (
 				45BD11CF2C77E06100FA04A6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				4504F8D22C7E884100DD8383 /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				4504F8D72C7E8A3400DD8383 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
 			productRefGroup = 458038FC2C73E8F600D84C94 /* Products */;
 			projectDirPath = "";
@@ -500,6 +511,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		4504F8D22C7E884100DD8383 /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.19.7;
+			};
+		};
+		4504F8D72C7E8A3400DD8383 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.1;
+			};
+		};
 		45BD11CF2C77E06100FA04A6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -511,6 +538,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4504F8D32C7E884100DD8383 /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4504F8D22C7E884100DD8383 /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+		4504F8D52C7E884100DD8383 /* SDWebImageMapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4504F8D22C7E884100DD8383 /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImageMapKit;
+		};
+		4504F8D82C7E8A3400DD8383 /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4504F8D72C7E8A3400DD8383 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
 		45BD11D02C77E06100FA04A6 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 45BD11CF2C77E06100FA04A6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
