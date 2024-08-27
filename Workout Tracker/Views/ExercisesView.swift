@@ -24,6 +24,29 @@ struct ExercisesView: View {
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
 
+    // Mapping dictionaries to condense categories
+    private let equipmentMapping: [String: String] = [
+        "elliptical machine": "machine",
+        "leverage machine": "machine",
+        "sled machine": "machine",
+        "stepmill machine": "machine",
+        "stationary bike": "machine",
+        "hammer": "other",
+        "trap bar": "other",
+        "rope": "other",
+        "wheel roller": "other",
+        // Add more mappings as needed
+    ]
+    
+    private let bodyPartMapping: [String: String] = [
+        "lower legs": "legs",
+        "upper legs": "legs",
+        "lower arms": "arms",
+        "upper arms": "arms",
+        "waist": "core", // Map 'waist' to 'core'
+        // Add more mappings as needed
+    ]
+
     var body: some View {
         NavigationView {
             VStack {
@@ -135,7 +158,11 @@ struct ExercisesView: View {
         db.collection("public").document("user_exercises_2").getDocument { (document, error) in
             if let document = document, document.exists {
                 if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
-                    let bodyPartsSet = Set(exercisesArray.compactMap { $0["bodyPart"] as? String })
+                    var bodyPartsSet = Set<String>()
+                    for bodyPart in exercisesArray.compactMap({ $0["bodyPart"] as? String }) {
+                        let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
+                        bodyPartsSet.insert(mappedBodyPart)
+                    }
                     DispatchQueue.main.async {
                         self.bodyParts = Array(bodyPartsSet).sorted()
                         self.isBodyPartSheetPresented = true // Show sheet after fetching data
@@ -152,7 +179,11 @@ struct ExercisesView: View {
         db.collection("public").document("user_exercises_2").getDocument { (document, error) in
             if let document = document, document.exists {
                 if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
-                    let equipmentsSet = Set(exercisesArray.compactMap { $0["equipment"] as? String })
+                    var equipmentsSet = Set<String>()
+                    for equipment in exercisesArray.compactMap({ $0["equipment"] as? String }) {
+                        let mappedEquipment = equipmentMapping[equipment] ?? equipment
+                        equipmentsSet.insert(mappedEquipment)
+                    }
                     DispatchQueue.main.async {
                         self.equipments = Array(equipmentsSet).sorted()
                         self.isEquipmentSheetPresented = true // Show sheet after fetching data
@@ -166,8 +197,10 @@ struct ExercisesView: View {
 
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
-            let matchesBodyPart = selectedBodyPart == nil || exercise.bodyPart == selectedBodyPart
-            let matchesEquipment = selectedEquipment == nil || exercise.equipment == selectedEquipment
+            let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
+            let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
+            let matchesBodyPart = selectedBodyPart == nil || mappedBodyPart == selectedBodyPart
+            let matchesEquipment = selectedEquipment == nil || mappedEquipment == selectedEquipment
             let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
 
             return matchesBodyPart && matchesEquipment && matchesText
@@ -210,6 +243,10 @@ struct ExercisesView: View {
         }
     }
 }
+
+
+
+
 
 
 
