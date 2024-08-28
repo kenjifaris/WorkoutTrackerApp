@@ -12,14 +12,23 @@ struct ExerciseRowView: View {
 
     var body: some View {
         HStack {
-            if let gifFileName = exercise.gifFileName,
-               let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil),
-               let image = UIImage(contentsOfFile: gifPath) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(8)
+            if let gifFileName = exercise.gifFileName {
+                // Use the folder reference path here
+                let gifPath = Bundle.main.path(forResource: "360/\(gifFileName)", ofType: nil)
+                
+                if let gifPath = gifPath, let image = UIImage(contentsOfFile: gifPath) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+                } else {
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(.gray)
+                }
             } else {
                 Image(systemName: "photo")
                     .resizable()
@@ -56,8 +65,8 @@ struct ExerciseRowView_Previews: PreviewProvider {
             bodyPart: "Chest",
             equipment: "Body weight",
             category: "Strength",
-            gifFileName: "0001.gif",  // This must come before secondaryMuscles
-            secondaryMuscles: ["Triceps", "Shoulders"],  // Placed after gifFileName
+            gifFileName: "0001.gif",
+            secondaryMuscles: ["Triceps", "Shoulders"],
             instructions: [
                 "Start in a high plank position with your hands placed slightly wider than shoulder-width apart.",
                 "Lower your body until your chest nearly touches the floor.",
@@ -67,6 +76,9 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
+
+
+
 
 
 

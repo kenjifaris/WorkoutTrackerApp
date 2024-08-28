@@ -149,7 +149,7 @@ struct ExercisesView: View {
         }
     }
 
-    // Fetch body parts from Firestore (same logic as before)
+    // Fetch body parts from Firestore
     private func fetchBodyParts() {
         let db = Firestore.firestore()
         db.collection("exercises").getDocuments { (snapshot, error) in
@@ -171,7 +171,7 @@ struct ExercisesView: View {
         }
     }
 
-    // Fetch equipment from Firestore (same logic as before)
+    // Fetch equipment from Firestore
     private func fetchEquipments() {
         let db = Firestore.firestore()
         db.collection("exercises").getDocuments { (snapshot, error) in
@@ -193,7 +193,7 @@ struct ExercisesView: View {
         }
     }
 
-    // Filter exercises (same logic as before)
+    // Filter exercises
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
             let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
@@ -244,6 +244,10 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+
+
+
 
 
 
