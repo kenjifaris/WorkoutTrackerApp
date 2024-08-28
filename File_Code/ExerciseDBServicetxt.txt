@@ -1,6 +1,3 @@
-// Preview for ExercisesView
-struct ExercisesView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExercisesView()
-    }
-}
+https://v2.exercisedb.io/image/VTgrk8q1PVI6K3
+
+https://v2.exercisedb.io/image/GM0nd8kgRSkge0

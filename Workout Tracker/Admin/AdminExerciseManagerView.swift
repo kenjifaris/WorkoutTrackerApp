@@ -111,7 +111,7 @@ struct AdminExerciseManagerView: View {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button("Duplicate Document") {
                             // Example of duplicating the "user_exercises" document with a new ID
-                            duplicateDocument(from: "user_exercises", to: "user_exercises_3", in: "public")
+                            duplicateDocument(from: "user_exercises", to: "user_exercises_4", in: "public")
                         }
                     }
                 }

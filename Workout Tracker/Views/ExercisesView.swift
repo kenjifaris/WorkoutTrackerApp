@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import SDWebImageSwiftUI  // Import SDWebImageSwiftUI
 
 struct ExercisesView: View {
     @State private var exercises: [ExerciseModel] = []
@@ -235,12 +236,13 @@ struct ExercisesView: View {
         }
     }
 }
-// Preview for ExercisesView
+
 struct ExercisesView_Previews: PreviewProvider {
     static var previews: some View {
         ExercisesView()
     }
 }
+
 
 
 

@@ -6,22 +6,24 @@
 //
 
 import SwiftUI
+import SDWebImageSwiftUI  // Import SDWebImageSwiftUI
 
 struct ExerciseRowView: View {
     let exercise: ExerciseModel
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: exercise.gifUrl)) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(8)
-            } placeholder: {
-                ProgressView()
-                    .frame(width: 50, height: 50)
-            }
+            WebImage(url: URL(string: exercise.gifUrl))
+                .onSuccess { image, data, cacheType in
+                    print("Successfully loaded GIF: \(exercise.gifUrl)")
+                }
+                .onFailure { error in
+                    print("Failed to load GIF: \(exercise.gifUrl), Error: \(error.localizedDescription)")
+                }
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .cornerRadius(8)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(exercise.name)
@@ -62,5 +64,12 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
+
+
+
+
+
+
+
 
 

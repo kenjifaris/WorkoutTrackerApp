@@ -1,8 +1,100 @@
-This is what is says in the Xcode console..... 
+Did some research and looks like I can buy all the information off their website without using their API. I think this may be better, what do you think? here is their website and here is their sample data... https://exercisedb.io/
 
-
-nw_read_request_report [C3] Receive failed with error "Operation timed out"
-nw_read_request_report [C3] Receive failed with error "Operation timed out"
-nw_read_request_report [C3] Receive failed with error "Operation timed out"
-nw_endpoint_flow_fillout_data_transfer_snapshot copy_info() returned NULL
-nw_connection_copy_connected_local_endpoint_block_invoke [C3] Connection has no local endpoint
+[
+    {
+        "bodyPart": "chest",
+        "equipment": "barbell",
+        "id": "0025",
+        "name": "barbell bench press",
+        "target": "pectorals",
+        "secondaryMuscles": [
+            "triceps",
+            "shoulders"
+        ],
+        "instructions": [
+            "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+            "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
+            "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+            "Lower the barbell slowly towards your chest, keeping your elbows tucked in.",
+            "Pause for a moment when the barbell touches your chest.",
+            "Push the barbell back up to the starting position by extending your arms.",
+            "Repeat for the desired number of repetitions."
+        ]
+    },
+    {
+        "bodyPart": "upper arms",
+        "equipment": "barbell",
+        "id": "0031",
+        "name": "barbell curl",
+        "target": "biceps",
+        "secondaryMuscles": [
+            "forearms"
+        ],
+        "instructions": [
+            "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, palms facing forward.",
+            "Keep your elbows close to your torso and exhale as you curl the weights while contracting your biceps.",
+            "Continue to raise the bar until your biceps are fully contracted and the bar is at shoulder level.",
+            "Hold the contracted position for a brief pause as you squeeze your biceps.",
+            "Inhale as you slowly begin to lower the bar back to the starting position.",
+            "Repeat for the desired number of repetitions."
+        ]
+    },
+    {
+        "bodyPart": "shoulders",
+        "equipment": "dumbbell",
+        "id": "0405",
+        "name": "dumbbell seated shoulder press",
+        "target": "delts",
+        "secondaryMuscles": [
+            "triceps",
+            "upper back"
+        ],
+        "instructions": [
+            "Sit on a bench with a dumbbell in each hand, resting on your thighs.",
+            "Raise the dumbbells to shoulder height, palms facing forward.",
+            "Press the dumbbells upward until your arms are fully extended overhead.",
+            "Pause for a moment at the top, then slowly lower the dumbbells back to shoulder height.",
+            "Repeat for the desired number of repetitions."
+        ]
+    },
+    {
+        "bodyPart": "waist",
+        "equipment": "body weight",
+        "id": "0003",
+        "name": "air bike",
+        "target": "abs",
+        "secondaryMuscles": [
+            "hip flexors"
+        ],
+        "instructions": [
+            "Lie flat on your back with your hands placed behind your head.",
+            "Lift your legs off the ground and bend your knees at a 90-degree angle.",
+            "Bring your right elbow towards your left knee while simultaneously straightening your right leg.",
+            "Return to the starting position and repeat the movement on the opposite side, bringing your left elbow towards your right knee while straightening your left leg.",
+            "Continue alternating sides in a pedaling motion for the desired number of repetitions."
+        ]
+    },
+    {
+        "bodyPart": "cardio",
+        "equipment": "body weight",
+        "id": "1160",
+        "name": "burpee",
+        "target": "cardiovascular system",
+        "secondaryMuscles": [
+            "quadriceps",
+            "hamstrings",
+            "calves",
+            "shoulders",
+            "chest"
+        ],
+        "instructions": [
+            "Start in a standing position with your feet shoulder-width apart.",
+            "Lower your body into a squat position by bending your knees and placing your hands on the floor in front of you.",
+            "Kick your feet back into a push-up position.",
+            "Perform a push-up, keeping your body in a straight line.",
+            "Jump your feet back into the squat position.",
+            "Jump up explosively, reaching your arms overhead.",
+            "Land softly and immediately lower back into a squat position to begin the next repetition."
+        ]
+    }
+]
