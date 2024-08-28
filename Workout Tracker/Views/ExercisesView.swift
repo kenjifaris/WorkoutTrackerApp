@@ -36,7 +36,6 @@ struct ExercisesView: View {
         "Trap Bar": "Other",
         "Rope": "Other",
         "Wheel Roller": "Other",
-        // Add more mappings as needed
     ]
     
     private let bodyPartMapping: [String: String] = [
@@ -44,8 +43,7 @@ struct ExercisesView: View {
         "Upper Legs": "Legs",
         "Lower Arms": "Arms",
         "Upper Arms": "Arms",
-        "Waist": "Core", // Map 'waist' to 'core'
-        // Add more mappings as needed
+        "Waist": "Core",
     ]
 
     var body: some View {
@@ -57,10 +55,8 @@ struct ExercisesView: View {
 
                 // Filter Buttons
                 HStack(spacing: 16) {
-                    Button(action: {
-                        fetchBodyParts()
-                    }) {
-                        Text(selectedBodyPart ?? "Any Body Part")
+                    Button(action: fetchBodyParts) {
+                        Text(selectedBodyPart ?? "Body Part")
                             .font(.subheadline)
                             .padding()
                             .background(Color.gray.opacity(0.2))
@@ -68,7 +64,7 @@ struct ExercisesView: View {
                     }
                     .sheet(isPresented: $isBodyPartSheetPresented) {
                         List {
-                            Button("Any Body Part") {
+                            Button("Body Part") {
                                 selectedBodyPart = nil
                                 filterExercises(searchText)
                                 isBodyPartSheetPresented = false
@@ -83,10 +79,8 @@ struct ExercisesView: View {
                         }
                     }
 
-                    Button(action: {
-                        fetchEquipments()
-                    }) {
-                        Text(selectedEquipment ?? "Any Equipment")
+                    Button(action: fetchEquipments) {
+                        Text(selectedEquipment ?? "Equipment")
                             .font(.subheadline)
                             .padding()
                             .background(Color.gray.opacity(0.2))
@@ -94,7 +88,7 @@ struct ExercisesView: View {
                     }
                     .sheet(isPresented: $isEquipmentSheetPresented) {
                         List {
-                            Button("Any Equipment") {
+                            Button("Equipment") {
                                 selectedEquipment = nil
                                 filterExercises(searchText)
                                 isEquipmentSheetPresented = false
@@ -148,9 +142,7 @@ struct ExercisesView: View {
                 }
             }
             .navigationTitle("Exercises")
-            .onAppear {
-                loadExercisesFromFirebase()
-            }
+            .onAppear(perform: loadExercisesFromFirebase)
             .sheet(item: $selectedExercise) { exercise in
                 ExerciseDetailView(exercise: exercise)
             }
@@ -160,20 +152,20 @@ struct ExercisesView: View {
     private func fetchBodyParts() {
         let db = Firestore.firestore()
         db.collection("public").document("user_exercises_2").getDocument { (document, error) in
-            if let document = document, document.exists {
-                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
-                    var bodyPartsSet = Set<String>()
-                    for bodyPart in exercisesArray.compactMap({ $0["bodyPart"] as? String }) {
-                        let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
-                        bodyPartsSet.insert(mappedBodyPart)
-                    }
-                    DispatchQueue.main.async {
-                        self.bodyParts = Array(bodyPartsSet).sorted()
-                        self.isBodyPartSheetPresented = true // Show sheet after fetching data
-                    }
-                }
-            } else {
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
                 print("Failed to fetch body parts: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            var bodyPartsSet = Set<String>()
+            for bodyPart in exercisesArray.compactMap({ $0["bodyPart"] as? String }) {
+                let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
+                bodyPartsSet.insert(mappedBodyPart)
+            }
+            DispatchQueue.main.async {
+                self.bodyParts = Array(bodyPartsSet).sorted()
+                self.isBodyPartSheetPresented = true // Show sheet after fetching data
             }
         }
     }
@@ -181,20 +173,20 @@ struct ExercisesView: View {
     private func fetchEquipments() {
         let db = Firestore.firestore()
         db.collection("public").document("user_exercises_2").getDocument { (document, error) in
-            if let document = document, document.exists {
-                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
-                    var equipmentsSet = Set<String>()
-                    for equipment in exercisesArray.compactMap({ $0["equipment"] as? String }) {
-                        let mappedEquipment = equipmentMapping[equipment] ?? equipment
-                        equipmentsSet.insert(mappedEquipment)
-                    }
-                    DispatchQueue.main.async {
-                        self.equipments = Array(equipmentsSet).sorted()
-                        self.isEquipmentSheetPresented = true // Show sheet after fetching data
-                    }
-                }
-            } else {
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
                 print("Failed to fetch equipment: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            var equipmentsSet = Set<String>()
+            for equipment in exercisesArray.compactMap({ $0["equipment"] as? String }) {
+                let mappedEquipment = equipmentMapping[equipment] ?? equipment
+                equipmentsSet.insert(mappedEquipment)
+            }
+            DispatchQueue.main.async {
+                self.equipments = Array(equipmentsSet).sorted()
+                self.isEquipmentSheetPresented = true // Show sheet after fetching data
             }
         }
     }
@@ -223,31 +215,26 @@ struct ExercisesView: View {
 
     private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
-
         db.collection("public").document("user_exercises_2").getDocument { document, error in
-            if let document = document, document.exists {
-                do {
-                    if let data = document.data(),
-                       let exercisesArray = data["exercises"] as? [[String: Any]] {
-                        let jsonData = try JSONSerialization.data(withJSONObject: exercisesArray, options: [])
-                        let exercises = try JSONDecoder().decode([ExerciseModel].self, from: jsonData)
-                        DispatchQueue.main.async {
-                            self.exercises = exercises
-                            self.filteredExercises = exercises
-                        }
-                    } else {
-                        print("No exercises found in Firebase")
-                    }
-                } catch {
-                    print("Failed to decode exercises: \(error)")
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
+                print("Failed to fetch exercises: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: exercisesArray, options: [])
+                let exercises = try JSONDecoder().decode([ExerciseModel].self, from: jsonData)
+                DispatchQueue.main.async {
+                    self.exercises = exercises
+                    self.filteredExercises = exercises
                 }
-            } else {
-                print("Document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
+            } catch {
+                print("Failed to decode exercises: \(error)")
             }
         }
     }
 }
-
 // Preview for ExercisesView
 struct ExercisesView_Previews: PreviewProvider {
     static var previews: some View {
