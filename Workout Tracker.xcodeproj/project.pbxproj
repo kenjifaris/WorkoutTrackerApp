@@ -11,6 +11,8 @@
 		4504F8D42C7E884100DD8383 /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D32C7E884100DD8383 /* SDWebImage */; };
 		4504F8D62C7E884100DD8383 /* SDWebImageMapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D52C7E884100DD8383 /* SDWebImageMapKit */; };
 		4504F8D92C7E8A3400DD8383 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4504F8D82C7E8A3400DD8383 /* SDWebImageSwiftUI */; };
+		4504F8DB2C7FC8AF00DD8383 /* exerciseData.json in Resources */ = {isa = PBXBuildFile; fileRef = 4504F8DA2C7FC8AE00DD8383 /* exerciseData.json */; };
+		450C9AFC2C7FDE63004DE277 /* 360 in Resources */ = {isa = PBXBuildFile; fileRef = 450C9AFB2C7FDE62004DE277 /* 360 */; };
 		458038FF2C73E8F600D84C94 /* Workout_TrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */; };
 		458039012C73E8F600D84C94 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039002C73E8F600D84C94 /* ProfileView.swift */; };
 		458039032C73E8F700D84C94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 458039022C73E8F700D84C94 /* Assets.xcassets */; };
@@ -42,6 +44,8 @@
 
 /* Begin PBXFileReference section */
 		4504F8D02C7E716600DD8383 /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
+		4504F8DA2C7FC8AE00DD8383 /* exerciseData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = exerciseData.json; sourceTree = "<group>"; };
+		450C9AFB2C7FDE62004DE277 /* 360 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = 360; sourceTree = "<group>"; };
 		458038FB2C73E8F600D84C94 /* Workout Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Workout Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout_TrackerApp.swift; sourceTree = "<group>"; };
 		458039002C73E8F600D84C94 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -114,6 +118,7 @@
 		458038FD2C73E8F600D84C94 /* Workout Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				4504F8DA2C7FC8AE00DD8383 /* exerciseData.json */,
 				458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */,
 				45BD11CD2C77DDD700FA04A6 /* GoogleService-Info.plist */,
 				458039462C7669E600D84C94 /* Admin */,
@@ -122,6 +127,7 @@
 				4580390F2C73E92900D84C94 /* ViewModels */,
 				4580390D2C73E91900D84C94 /* Components */,
 				458039022C73E8F700D84C94 /* Assets.xcassets */,
+				450C9AFB2C7FDE62004DE277 /* 360 */,
 				4504F8CF2C7E713900DD8383 /* Services */,
 				4580393F2C75497B00D84C94 /* Configurations */,
 				458039042C73E8F700D84C94 /* Preview Content */,
@@ -270,8 +276,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				458039062C73E8F700D84C94 /* Preview Assets.xcassets in Resources */,
+				450C9AFC2C7FDE63004DE277 /* 360 in Resources */,
 				458039032C73E8F700D84C94 /* Assets.xcassets in Resources */,
 				45BD11CE2C77DDD700FA04A6 /* GoogleService-Info.plist in Resources */,
+				4504F8DB2C7FC8AF00DD8383 /* exerciseData.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

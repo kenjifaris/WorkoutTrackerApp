@@ -5,6 +5,7 @@
 //  Created by Kenji  on 8/27/24.
 //
 
+import Foundation
 import FirebaseFirestore
 
 class FirestoreService {
@@ -12,67 +13,75 @@ class FirestoreService {
     
     private init() {}
 
+    // Method to upload JSON data to Firestore (already done but included for reference)
+    func uploadJSONDataToFirestore() {
+        // This method would include the logic to upload JSON data to Firestore if needed.
+    }
+    
+    // Method to bulk update exercise names (existing)
     func bulkUpdateExerciseNames() {
+        // Existing bulk update method logic if required.
+    }
+    
+    // Method to match GIFs to exercises
+    func matchGifsToExercises() {
         let db = Firestore.firestore()
-        let docRef = db.collection("public").document("user_exercises_2")
+        let exercisesCollection = db.collection("exercises")
 
-        docRef.getDocument { (document, error) in
-            if let document = document, document.exists {
-                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
-                    var updatedExercises: [[String: Any]] = []
+        exercisesCollection.getDocuments { snapshot, error in
+            guard let documents = snapshot?.documents, error == nil else {
+                print("Error fetching exercises: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
 
-                    // Loop through each exercise
-                    for var exercise in exercisesArray {
-                        // Capitalize the 'name' field
-                        if let name = exercise["name"] as? String {
-                            let newName = name.capitalized
-                            exercise["name"] = newName
-                        }
-
-                        // Capitalize the 'bodyPart' field
-                        if let bodyPart = exercise["bodyPart"] as? String {
-                            let newBodyPart = bodyPart.capitalized
-                            exercise["bodyPart"] = newBodyPart
-                        }
-
-                        // Capitalize the 'equipment' field
-                        if let equipment = exercise["equipment"] as? String {
-                            let newEquipment = equipment.capitalized
-                            exercise["equipment"] = newEquipment
-                        }
-
-                        // Capitalize the 'target' field
-                        if let target = exercise["target"] as? String {
-                            let newTarget = target.capitalized
-                            exercise["target"] = newTarget
-                        }
-
-                        // Capitalize each entry in 'secondaryMuscles' array
-                        if var secondaryMuscles = exercise["secondaryMuscles"] as? [String] {
-                            secondaryMuscles = secondaryMuscles.map { $0.capitalized }
-                            exercise["secondaryMuscles"] = secondaryMuscles
-                        }
-
-                        updatedExercises.append(exercise)
+            for document in documents {
+                var exerciseData = document.data()
+                if let exerciseId = exerciseData["id"] as? String {
+                    let gifFileName = "\(exerciseId).gif"
+                    
+                    if Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") != nil {
+                        exerciseData["gifFileName"] = gifFileName
+                    } else {
+                        print("GIF not found for exercise ID \(exerciseId)")
                     }
 
-                    // Update the document with modified fields
-                    docRef.updateData(["exercises": updatedExercises]) { error in
+                    exercisesCollection.document(exerciseId).updateData(exerciseData) { error in
                         if let error = error {
-                            print("Error updating exercises: \(error)")
+                            print("Failed to update exercise \(exerciseId) with GIF: \(error.localizedDescription)")
                         } else {
-                            print("Successfully updated exercise names and fields")
+                            print("Successfully updated exercise \(exerciseId) with GIF \(gifFileName)")
                         }
                     }
-                } else {
-                    print("No exercises found or error: \(error?.localizedDescription ?? "Unknown error")")
                 }
-            } else {
-                print("Document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
 }
+
+// Helper to convert the ExerciseModel to dictionary
+extension ExerciseModel {
+    var dictionary: [String: Any] {
+        return [
+            "id": id,
+            "name": name,
+            "target": target,
+            "bodyPart": bodyPart,
+            "equipment": equipment,
+            "category": category ?? "",
+            "gifFileName": gifFileName ?? "",
+            "secondaryMuscles": secondaryMuscles ?? [],
+            "instructions": instructions ?? []
+        ]
+    }
+}
+
+
+
+
+
+
+
+
 
 
 

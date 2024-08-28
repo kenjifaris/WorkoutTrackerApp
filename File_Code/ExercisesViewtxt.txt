@@ -1,100 +1,203 @@
-Did some research and looks like I can buy all the information off their website without using their API. I think this may be better, what do you think? here is their website and here is their sample data... https://exercisedb.io/
+Issues with AdminExerciseManagerView. I also need the preview so we can make edits in the preview 
 
-[
-    {
-        "bodyPart": "chest",
-        "equipment": "barbell",
-        "id": "0025",
-        "name": "barbell bench press",
-        "target": "pectorals",
-        "secondaryMuscles": [
-            "triceps",
-            "shoulders"
-        ],
-        "instructions": [
-            "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
-            "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
-            "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
-            "Lower the barbell slowly towards your chest, keeping your elbows tucked in.",
-            "Pause for a moment when the barbell touches your chest.",
-            "Push the barbell back up to the starting position by extending your arms.",
-            "Repeat for the desired number of repetitions."
-        ]
-    },
-    {
-        "bodyPart": "upper arms",
-        "equipment": "barbell",
-        "id": "0031",
-        "name": "barbell curl",
-        "target": "biceps",
-        "secondaryMuscles": [
-            "forearms"
-        ],
-        "instructions": [
-            "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, palms facing forward.",
-            "Keep your elbows close to your torso and exhale as you curl the weights while contracting your biceps.",
-            "Continue to raise the bar until your biceps are fully contracted and the bar is at shoulder level.",
-            "Hold the contracted position for a brief pause as you squeeze your biceps.",
-            "Inhale as you slowly begin to lower the bar back to the starting position.",
-            "Repeat for the desired number of repetitions."
-        ]
-    },
-    {
-        "bodyPart": "shoulders",
-        "equipment": "dumbbell",
-        "id": "0405",
-        "name": "dumbbell seated shoulder press",
-        "target": "delts",
-        "secondaryMuscles": [
-            "triceps",
-            "upper back"
-        ],
-        "instructions": [
-            "Sit on a bench with a dumbbell in each hand, resting on your thighs.",
-            "Raise the dumbbells to shoulder height, palms facing forward.",
-            "Press the dumbbells upward until your arms are fully extended overhead.",
-            "Pause for a moment at the top, then slowly lower the dumbbells back to shoulder height.",
-            "Repeat for the desired number of repetitions."
-        ]
-    },
-    {
-        "bodyPart": "waist",
-        "equipment": "body weight",
-        "id": "0003",
-        "name": "air bike",
-        "target": "abs",
-        "secondaryMuscles": [
-            "hip flexors"
-        ],
-        "instructions": [
-            "Lie flat on your back with your hands placed behind your head.",
-            "Lift your legs off the ground and bend your knees at a 90-degree angle.",
-            "Bring your right elbow towards your left knee while simultaneously straightening your right leg.",
-            "Return to the starting position and repeat the movement on the opposite side, bringing your left elbow towards your right knee while straightening your left leg.",
-            "Continue alternating sides in a pedaling motion for the desired number of repetitions."
-        ]
-    },
-    {
-        "bodyPart": "cardio",
-        "equipment": "body weight",
-        "id": "1160",
-        "name": "burpee",
-        "target": "cardiovascular system",
-        "secondaryMuscles": [
-            "quadriceps",
-            "hamstrings",
-            "calves",
-            "shoulders",
-            "chest"
-        ],
-        "instructions": [
-            "Start in a standing position with your feet shoulder-width apart.",
-            "Lower your body into a squat position by bending your knees and placing your hands on the floor in front of you.",
-            "Kick your feet back into a push-up position.",
-            "Perform a push-up, keeping your body in a straight line.",
-            "Jump your feet back into the squat position.",
-            "Jump up explosively, reaching your arms overhead.",
-            "Land softly and immediately lower back into a squat position to begin the next repetition."
-        ]
+import SwiftUI
+import Firebase
+import FirebaseFirestore
+
+struct AdminExerciseManagerView: View {
+    @State private var exercises: [ExerciseModel] = []
+    @State private var selectedExercises: Set<String> = []
+    @State private var editedNames: [String: String] = [:]
+    @State private var editedBodyParts: [String: String] = [:]
+    @State private var editedEquipments: [String: String] = [:]
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                // Button to trigger the JSON upload to Firestore
+                Button("Upload JSON to Firestore") {
+                    FirestoreService.shared.uploadJSONDataToFirestore()
+                }
+                .padding()
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
+                // Existing bulk update button
+                Button("Run Bulk Update") {
+                    FirestoreService.shared.bulkUpdateExerciseNames()
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
+                // New button to match GIFs to exercises
+                Button("Match GIFs to Exercises") {
+                    FirestoreService.shared.matchGifsToExercises()
+                }
+                .padding()
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
+                List {
+                    ForEach(exercises, id: \.id) { exercise in
+                        HStack {
+                            // Display exercise image or GIF
+                            if let gifFileName = exercise.gifFileName,
+                               let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil),
+                               let image = UIImage(contentsOfFile: gifPath) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .cornerRadius(8)
+                            } else {
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.gray)
+                            }
+
+                            VStack(alignment: .leading) {
+                                TextField(exercise.name, text: Binding(
+                                    get: { editedNames[exercise.id] ?? exercise.name },
+                                    set: { editedNames[exercise.id] = $0 }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                                TextField(exercise.bodyPart, text: Binding(
+                                    get: { editedBodyParts[exercise.id] ?? exercise.bodyPart },
+                                    set: { editedBodyParts[exercise.id] = $0 }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .foregroundColor(.gray)
+
+                                TextField(exercise.equipment, text: Binding(
+                                    get: { editedEquipments[exercise.id] ?? exercise.equipment },
+                                    set: { editedEquipments[exercise.id] = $0 }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .foregroundColor(.gray)
+                            }
+
+                            Spacer()
+
+                            Button(action: {
+                                toggleSelection(for: exercise)
+                            }) {
+                                Image(systemName: selectedExercises.contains(exercise.id) ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(selectedExercises.contains(exercise.id) ? .blue : .gray)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                .navigationTitle("Admin Exercise Manager")
+                .onAppear {
+                    loadData()
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save Changes") {
+                            saveSelectedExercises()
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Duplicate Document") {
+                            duplicateDocument(from: "user_exercises", to: "user_exercises_4", in: "public")
+                        }
+                    }
+                }
+            }
+        }
     }
-]
+
+    private func loadData() {
+        fetchExercises()
+        fetchSelectedExercises()
+    }
+
+    private func fetchExercises() {
+        ExerciseDBService().fetchAllExercises { result in
+            switch result {
+            case .success(let exercises):
+                DispatchQueue.main.async {
+                    self.exercises = exercises
+                }
+            case .failure(let error):
+                print("Failed to fetch exercises: \(error)")
+            }
+        }
+    }
+
+    private func fetchSelectedExercises() {
+        let db = Firestore.firestore()
+        let docRef = db.collection("public").document("user_exercises")
+
+        docRef.getDocument { document, error in
+            if let document = document, document.exists {
+                if let data = document.data(), let savedExercises = data["exercises"] as? [[String: Any]] {
+                    DispatchQueue.main.async {
+                        self.selectedExercises = Set(savedExercises.compactMap { $0["id"] as? String })
+                    }
+                }
+            } else {
+                print("No document found or error: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
+    private func toggleSelection(for exercise: ExerciseModel) {
+        if selectedExercises.contains(exercise.id) {
+            selectedExercises.remove(exercise.id)
+        } else {
+            selectedExercises.insert(exercise.id)
+        }
+        
+        saveSelectedExercises()
+    }
+
+    private func saveSelectedExercises() {
+        let db = Firestore.firestore()
+        let selectedExerciseModels = exercises.filter { selectedExercises.contains($0.id) }
+        do {
+            let data = try JSONEncoder().encode(selectedExerciseModels)
+            if let exercisesDict = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [[String: Any]] {
+                db.collection("public").document("user_exercises").setData(["exercises": exercisesDict]) { error in
+                    if let error = error {
+                        print("Failed to save exercises to Firebase: \(error)")
+                    } else {
+                        print("Exercises successfully saved to Firebase")
+                    }
+                }
+            }
+        } catch {
+            print("Failed to encode exercises: \(error)")
+        }
+    }
+
+    private func duplicateDocument(from sourceDocID: String, to targetDocID: String, in collection: String) {
+        let db = Firestore.firestore()
+        let sourceDocRef = db.collection(collection).document(sourceDocID)
+        let targetDocRef = db.collection(collection).document(targetDocID)
+        
+        sourceDocRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                if let data = document.data() {
+                    targetDocRef.setData(data) { error in
+                        if let error = error {
+                            print("Error duplicating document: \(error.localizedDescription)")
+                        } else {
+                            print("Document successfully duplicated!")
+                        }
+                    }
+                }
+            } else {
+                print("Source document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+}

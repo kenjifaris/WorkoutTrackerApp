@@ -8,7 +8,6 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
-import SDWebImageSwiftUI  // Import SDWebImageSwiftUI
 
 struct ExercisesView: View {
     @State private var exercises: [ExerciseModel] = []
@@ -143,26 +142,27 @@ struct ExercisesView: View {
                 }
             }
             .navigationTitle("Exercises")
-            .onAppear(perform: loadExercisesFromFirebase)
+            .onAppear(perform: loadExercisesFromFirebase) // Load from Firestore
             .sheet(item: $selectedExercise) { exercise in
                 ExerciseDetailView(exercise: exercise)
             }
         }
     }
 
+    // Fetch body parts from Firestore (same logic as before)
     private func fetchBodyParts() {
         let db = Firestore.firestore()
-        db.collection("public").document("user_exercises_2").getDocument { (document, error) in
-            guard let document = document, document.exists,
-                  let data = document.data(),
-                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
+        db.collection("exercises").getDocuments { (snapshot, error) in
+            guard let snapshot = snapshot else {
                 print("Failed to fetch body parts: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             var bodyPartsSet = Set<String>()
-            for bodyPart in exercisesArray.compactMap({ $0["bodyPart"] as? String }) {
-                let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
-                bodyPartsSet.insert(mappedBodyPart)
+            for document in snapshot.documents {
+                if let bodyPart = document.data()["bodyPart"] as? String {
+                    let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
+                    bodyPartsSet.insert(mappedBodyPart)
+                }
             }
             DispatchQueue.main.async {
                 self.bodyParts = Array(bodyPartsSet).sorted()
@@ -171,19 +171,20 @@ struct ExercisesView: View {
         }
     }
 
+    // Fetch equipment from Firestore (same logic as before)
     private func fetchEquipments() {
         let db = Firestore.firestore()
-        db.collection("public").document("user_exercises_2").getDocument { (document, error) in
-            guard let document = document, document.exists,
-                  let data = document.data(),
-                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
+        db.collection("exercises").getDocuments { (snapshot, error) in
+            guard let snapshot = snapshot else {
                 print("Failed to fetch equipment: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             var equipmentsSet = Set<String>()
-            for equipment in exercisesArray.compactMap({ $0["equipment"] as? String }) {
-                let mappedEquipment = equipmentMapping[equipment] ?? equipment
-                equipmentsSet.insert(mappedEquipment)
+            for document in snapshot.documents {
+                if let equipment = document.data()["equipment"] as? String {
+                    let mappedEquipment = equipmentMapping[equipment] ?? equipment
+                    equipmentsSet.insert(mappedEquipment)
+                }
             }
             DispatchQueue.main.async {
                 self.equipments = Array(equipmentsSet).sorted()
@@ -192,6 +193,7 @@ struct ExercisesView: View {
         }
     }
 
+    // Filter exercises (same logic as before)
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
             let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
@@ -204,28 +206,18 @@ struct ExercisesView: View {
         }
     }
 
-    private func addExercise(_ exercise: ExerciseModel) {
-        if !selectedExercises.contains(exercise) {
-            selectedExercises.append(exercise)
-        }
-    }
-
-    private func finalizeWorkout() {
-        // Navigate to a summary page or perform the desired action
-    }
-
+    // Load exercises from Firestore
     private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
-        db.collection("public").document("user_exercises_2").getDocument { document, error in
-            guard let document = document, document.exists,
-                  let data = document.data(),
-                  let exercisesArray = data["exercises"] as? [[String: Any]] else {
+        db.collection("exercises").getDocuments { (snapshot, error) in
+            guard let snapshot = snapshot else {
                 print("Failed to fetch exercises: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             do {
-                let jsonData = try JSONSerialization.data(withJSONObject: exercisesArray, options: [])
-                let exercises = try JSONDecoder().decode([ExerciseModel].self, from: jsonData)
+                let exercises = try snapshot.documents.compactMap { document -> ExerciseModel? in
+                    return try? document.data(as: ExerciseModel.self)
+                }
                 DispatchQueue.main.async {
                     self.exercises = exercises
                     self.filteredExercises = exercises
@@ -235,6 +227,16 @@ struct ExercisesView: View {
             }
         }
     }
+
+    private func addExercise(_ exercise: ExerciseModel) {
+        if !selectedExercises.contains(exercise) {
+            selectedExercises.append(exercise)
+        }
+    }
+
+    private func finalizeWorkout() {
+        // Navigate to a summary page or perform the desired action
+    }
 }
 
 struct ExercisesView_Previews: PreviewProvider {
@@ -242,6 +244,7 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
 
 
 

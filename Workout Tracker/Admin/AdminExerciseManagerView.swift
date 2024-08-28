@@ -19,7 +19,16 @@ struct AdminExerciseManagerView: View {
     var body: some View {
         NavigationView {
             VStack {
-                // Add a button to trigger the bulk update
+                // Button to trigger the JSON upload to Firestore
+                Button("Upload JSON to Firestore") {
+                    FirestoreService.shared.uploadJSONDataToFirestore()
+                }
+                .padding()
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
+                // Existing bulk update button
                 Button("Run Bulk Update") {
                     FirestoreService.shared.bulkUpdateExerciseNames()
                 }
@@ -27,59 +36,53 @@ struct AdminExerciseManagerView: View {
                 .background(Color.blue)
                 .foregroundColor(.white)
                 .cornerRadius(10)
-                
+
+                // New button to match GIFs to exercises
+                Button("Match GIFs to Exercises") {
+                    FirestoreService.shared.matchGifsToExercises()
+                }
+                .padding()
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
                 List {
                     ForEach(exercises, id: \.id) { exercise in
                         HStack {
                             // Display exercise image or GIF
-                            AsyncImage(url: URL(string: exercise.gifUrl)) { phase in
-                                if let image = phase.image {
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .cornerRadius(8)
-                                } else if phase.error != nil {
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .foregroundColor(.gray)
-                                } else {
-                                    ProgressView()
-                                        .frame(width: 50, height: 50)
-                                }
+                            if let gifFileName = exercise.gifFileName,
+                               let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360"),
+                               let image = UIImage(contentsOfFile: gifPath) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .cornerRadius(8)
+                            } else {
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.gray)
                             }
 
                             VStack(alignment: .leading) {
-                                // Editable text field for exercise name
                                 TextField(exercise.name, text: Binding(
                                     get: { editedNames[exercise.id] ?? exercise.name },
-                                    set: {
-                                        editedNames[exercise.id] = $0
-                                        print("Editing \(exercise.id): Name updated to \($0)")  // Debugging print statement
-                                    }
+                                    set: { editedNames[exercise.id] = $0 }
                                 ))
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
-                                // Editable text field for body part
                                 TextField(exercise.bodyPart, text: Binding(
                                     get: { editedBodyParts[exercise.id] ?? exercise.bodyPart },
-                                    set: {
-                                        editedBodyParts[exercise.id] = $0
-                                        print("Editing \(exercise.id): Body part updated to \($0)")  // Debugging print statement
-                                    }
+                                    set: { editedBodyParts[exercise.id] = $0 }
                                 ))
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .foregroundColor(.gray)
 
-                                // Editable text field for equipment
                                 TextField(exercise.equipment, text: Binding(
                                     get: { editedEquipments[exercise.id] ?? exercise.equipment },
-                                    set: {
-                                        editedEquipments[exercise.id] = $0
-                                        print("Editing \(exercise.id): Equipment updated to \($0)")  // Debugging print statement
-                                    }
+                                    set: { editedEquipments[exercise.id] = $0 }
                                 ))
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .foregroundColor(.gray)
@@ -87,7 +90,6 @@ struct AdminExerciseManagerView: View {
 
                             Spacer()
 
-                            // Toggle button to select or deselect exercises
                             Button(action: {
                                 toggleSelection(for: exercise)
                             }) {
@@ -100,17 +102,16 @@ struct AdminExerciseManagerView: View {
                 }
                 .navigationTitle("Admin Exercise Manager")
                 .onAppear {
-                    loadData() // Fetch exercises and selections
+                    loadData()
                 }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("Save Changes") {
-                            saveSelectedExercises() // Save the changes directly to Firestore
+                            saveSelectedExercises()
                         }
                     }
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button("Duplicate Document") {
-                            // Example of duplicating the "user_exercises" document with a new ID
                             duplicateDocument(from: "user_exercises", to: "user_exercises_4", in: "public")
                         }
                     }
@@ -120,10 +121,7 @@ struct AdminExerciseManagerView: View {
     }
 
     private func loadData() {
-        // Fetch exercises from API
         fetchExercises()
-
-        // Fetch selected exercises from Firestore
         fetchSelectedExercises()
     }
 
@@ -164,14 +162,11 @@ struct AdminExerciseManagerView: View {
             selectedExercises.insert(exercise.id)
         }
         
-        // Save immediately after toggling
         saveSelectedExercises()
     }
 
     private func saveSelectedExercises() {
         let db = Firestore.firestore()
-
-        // Prepare data to save
         let selectedExerciseModels = exercises.filter { selectedExercises.contains($0.id) }
         do {
             let data = try JSONEncoder().encode(selectedExerciseModels)
@@ -189,7 +184,6 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    // Function to duplicate a document
     private func duplicateDocument(from sourceDocID: String, to targetDocID: String, in collection: String) {
         let db = Firestore.firestore()
         let sourceDocRef = db.collection(collection).document(sourceDocID)
@@ -197,9 +191,7 @@ struct AdminExerciseManagerView: View {
         
         sourceDocRef.getDocument { (document, error) in
             if let document = document, document.exists {
-                // Get the data from the source document
                 if let data = document.data() {
-                    // Set the data to the target document
                     targetDocRef.setData(data) { error in
                         if let error = error {
                             print("Error duplicating document: \(error.localizedDescription)")
@@ -215,11 +207,18 @@ struct AdminExerciseManagerView: View {
     }
 }
 
+// Preview
 struct AdminExerciseManagerView_Previews: PreviewProvider {
     static var previews: some View {
         AdminExerciseManagerView()
     }
 }
+
+
+
+
+
+
 
 
 

@@ -16,8 +16,10 @@ struct ExerciseDetailView: View {
             // TabView to switch between About, History, Charts, PRs
             TabView {
                 VStack {
-                    // Display the GIF using SDWebImageSwiftUI
-                    if let gifUrl = URL(string: exercise.gifUrl) {
+                    // Display the GIF using SDWebImageSwiftUI with local file
+                    if let gifFileName = exercise.gifFileName,
+                       let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil),
+                       let gifUrl = URL(string: gifPath) {
                         WebImage(url: gifUrl)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -60,6 +62,7 @@ struct ExerciseDetailView: View {
         }
     }
 }
+
 
 
 

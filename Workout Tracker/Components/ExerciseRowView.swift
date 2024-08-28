@@ -6,24 +6,27 @@
 //
 
 import SwiftUI
-import SDWebImageSwiftUI  // Import SDWebImageSwiftUI
 
 struct ExerciseRowView: View {
     let exercise: ExerciseModel
 
     var body: some View {
         HStack {
-            WebImage(url: URL(string: exercise.gifUrl))
-                .onSuccess { image, data, cacheType in
-                    print("Successfully loaded GIF: \(exercise.gifUrl)")
-                }
-                .onFailure { error in
-                    print("Failed to load GIF: \(exercise.gifUrl), Error: \(error.localizedDescription)")
-                }
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50, height: 50)
-                .cornerRadius(8)
+            if let gifFileName = exercise.gifFileName,
+               let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil),
+               let image = UIImage(contentsOfFile: gifPath) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(8)
+            } else {
+                Image(systemName: "photo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.gray)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(exercise.name)
@@ -52,9 +55,9 @@ struct ExerciseRowView_Previews: PreviewProvider {
             target: "Chest",
             bodyPart: "Chest",
             equipment: "Body weight",
-            gifUrl: "https://example.com/pushup.gif",
             category: "Strength",
-            secondaryMuscles: ["Triceps", "Shoulders"],
+            gifFileName: "0001.gif",  // This must come before secondaryMuscles
+            secondaryMuscles: ["Triceps", "Shoulders"],  // Placed after gifFileName
             instructions: [
                 "Start in a high plank position with your hands placed slightly wider than shoulder-width apart.",
                 "Lower your body until your chest nearly touches the floor.",
@@ -64,6 +67,16 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
