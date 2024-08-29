@@ -69,6 +69,31 @@ class FirestoreService {
             }
         }
     }
+
+    // Function to duplicate the 'exercisesview_list' document
+    func duplicateExercisesViewList(newDocumentID: String) {
+        let db = Firestore.firestore()
+        let originalDocRef = db.collection("saved_exercises").document("exercisesview_list")
+        let newDocRef = db.collection("saved_exercises").document(newDocumentID)
+
+        originalDocRef.getDocument { (document, error) in
+            guard let document = document, document.exists else {
+                print("Error fetching original document: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+            if let data = document.data() {
+                // Set the data into the new document
+                newDocRef.setData(data) { error in
+                    if let error = error {
+                        print("Error duplicating document: \(error.localizedDescription)")
+                    } else {
+                        print("Document successfully duplicated with ID: \(newDocumentID)")
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Helper to convert the ExerciseModel to dictionary
@@ -87,6 +112,7 @@ extension ExerciseModel {
         ]
     }
 }
+
 
 
 

@@ -20,13 +20,20 @@ struct AdminExerciseManagerView: View {
         NavigationView {
             VStack {
                 // Button to trigger the JSON upload to Firestore
-                
-                
                 Button("Capitalize & Match GIFs") {
                     FirestoreService.shared.updateAndCapitalizeExerciseFields()
                 }
                 .padding()
                 .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
+                // Button to duplicate the document
+                Button("Duplicate ExercisesView List") {
+                    FirestoreService.shared.duplicateExercisesViewList(newDocumentID: "exercisesview_list_copy")
+                }
+                .padding()
+                .background(Color.red)
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
@@ -196,6 +203,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
