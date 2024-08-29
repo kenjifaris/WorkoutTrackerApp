@@ -33,7 +33,10 @@ struct ExercisesView: View {
 
                 // Filter Buttons
                 HStack(spacing: 16) {
-                    Button(action: fetchBodyParts) {
+                    Button(action: {
+                        fetchBodyParts()
+                        isBodyPartSheetPresented = true
+                    }) {
                         Text(selectedBodyPart ?? "Body Part")
                             .font(.subheadline)
                             .padding()
@@ -55,9 +58,15 @@ struct ExercisesView: View {
                                 }
                             }
                         }
+                        .onAppear {
+                            fetchBodyParts()
+                        }
                     }
 
-                    Button(action: fetchEquipments) {
+                    Button(action: {
+                        fetchEquipments()
+                        isEquipmentSheetPresented = true
+                    }) {
                         Text(selectedEquipment ?? "Equipment")
                             .font(.subheadline)
                             .padding()
@@ -78,6 +87,9 @@ struct ExercisesView: View {
                                     isEquipmentSheetPresented = false
                                 }
                             }
+                        }
+                        .onAppear {
+                            fetchEquipments()
                         }
                     }
                 }
@@ -150,7 +162,9 @@ struct ExercisesView: View {
                 }
             }
             .navigationTitle("Exercises")
-            .onAppear(perform: loadExercisesFromFirebase) // Load from Firestore
+            .onAppear(perform: {
+                loadExercisesFromFirebase()
+            }) // Load from Firestore
         }
     }
 
@@ -182,7 +196,6 @@ struct ExercisesView: View {
             DispatchQueue.main.async {
                 self.bodyParts = Array(bodyPartsSet).sorted()
                 print("Body Parts Set: \(self.bodyParts)")  // Debug log
-                self.isBodyPartSheetPresented = true // Show sheet after fetching data
             }
         }
     }
@@ -215,7 +228,6 @@ struct ExercisesView: View {
             DispatchQueue.main.async {
                 self.equipments = Array(equipmentsSet).sorted()
                 print("Equipments Set: \(self.equipments)")  // Debug log
-                self.isEquipmentSheetPresented = true // Show sheet after fetching data
             }
         }
     }
@@ -274,6 +286,8 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+
 
 
 
