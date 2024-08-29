@@ -20,26 +20,10 @@ struct AdminExerciseManagerView: View {
         NavigationView {
             VStack {
                 // Button to trigger the JSON upload to Firestore
-                Button("Upload JSON to Firestore") {
-                    FirestoreService.shared.uploadJSONDataToFirestore()
-                }
-                .padding()
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-
-                // Existing bulk update button
-                Button("Run Bulk Update") {
-                    FirestoreService.shared.bulkUpdateExerciseNames()
-                }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-
-                // New button to match GIFs to exercises
-                Button("Match GIFs to Exercises") {
-                    FirestoreService.shared.matchGifsToExercises()
+                
+                
+                Button("Capitalize & Match GIFs") {
+                    FirestoreService.shared.updateAndCapitalizeExerciseFields()
                 }
                 .padding()
                 .background(Color.orange)
@@ -141,7 +125,6 @@ struct AdminExerciseManagerView: View {
                     return try? document.data(as: ExerciseModel.self)
                 }
                 DispatchQueue.main.async {
-                    // No filter applied initially; load all exercises
                     self.exercises = fetchedExercises
                 }
             } catch {
@@ -213,6 +196,7 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
 
 
 
