@@ -24,6 +24,25 @@ struct ExercisesView: View {
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
 
+    // Mapping dictionaries to condense categories
+    private let equipmentMapping: [String: String] = [
+        "Elliptical Machine": "Machine",
+        "Leverage Machine": "Machine",
+        "Sled Machine": "Machine",
+        "Stepmill Machine": "Machine",
+        "Rope": "Other",
+        "Trap Bar": "Other",
+        "Body Weight": "Other"
+    ]
+    
+    private let bodyPartMapping: [String: String] = [
+        "Lower Legs": "Legs",
+        "Upper Legs": "Legs",
+        "Lower Arms": "Arms",
+        "Upper Arms": "Arms",
+        "Waist": "Core"
+    ]
+
     var body: some View {
         NavigationView {
             VStack {
@@ -58,9 +77,6 @@ struct ExercisesView: View {
                                 }
                             }
                         }
-                        .onAppear {
-                            fetchBodyParts()
-                        }
                     }
 
                     Button(action: {
@@ -87,9 +103,6 @@ struct ExercisesView: View {
                                     isEquipmentSheetPresented = false
                                 }
                             }
-                        }
-                        .onAppear {
-                            fetchEquipments()
                         }
                     }
                 }
@@ -184,18 +197,16 @@ struct ExercisesView: View {
                 return
             }
 
-            print("Exercises Array: \(exercisesArray)")
-
             var bodyPartsSet = Set<String>()
             for exerciseData in exercisesArray {
                 if let bodyPart = exerciseData["bodyPart"] as? String {
-                    print("Found body part: \(bodyPart)")  // Debug log
-                    bodyPartsSet.insert(bodyPart)
+                    // Apply the body part mapping
+                    let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
+                    bodyPartsSet.insert(mappedBodyPart)
                 }
             }
             DispatchQueue.main.async {
                 self.bodyParts = Array(bodyPartsSet).sorted()
-                print("Body Parts Set: \(self.bodyParts)")  // Debug log
             }
         }
     }
@@ -216,18 +227,16 @@ struct ExercisesView: View {
                 return
             }
 
-            print("Exercises Array: \(exercisesArray)")
-
             var equipmentsSet = Set<String>()
             for exerciseData in exercisesArray {
                 if let equipment = exerciseData["equipment"] as? String {
-                    print("Found equipment: \(equipment)")  // Debug log
-                    equipmentsSet.insert(equipment)
+                    // Apply the equipment mapping
+                    let mappedEquipment = equipmentMapping[equipment] ?? equipment
+                    equipmentsSet.insert(mappedEquipment)
                 }
             }
             DispatchQueue.main.async {
                 self.equipments = Array(equipmentsSet).sorted()
-                print("Equipments Set: \(self.equipments)")  // Debug log
             }
         }
     }
@@ -235,8 +244,10 @@ struct ExercisesView: View {
     // Filter exercises
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
-            let matchesBodyPart = selectedBodyPart == nil || exercise.bodyPart == selectedBodyPart
-            let matchesEquipment = selectedEquipment == nil || exercise.equipment == selectedEquipment
+            let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
+            let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
+            let matchesBodyPart = selectedBodyPart == nil || mappedBodyPart == selectedBodyPart
+            let matchesEquipment = selectedEquipment == nil || mappedEquipment == selectedEquipment
             let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
 
             return matchesBodyPart && matchesEquipment && matchesText
@@ -286,6 +297,7 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
 
 
 
