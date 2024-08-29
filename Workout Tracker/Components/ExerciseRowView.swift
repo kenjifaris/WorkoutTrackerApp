@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SDWebImageSwiftUI
 
 struct ExerciseRowView: View {
     let exercise: ExerciseModel
@@ -16,8 +17,8 @@ struct ExerciseRowView: View {
                 // Use the folder reference path here
                 let gifPath = Bundle.main.path(forResource: "360/\(gifFileName)", ofType: nil)
                 
-                if let gifPath = gifPath, let image = UIImage(contentsOfFile: gifPath) {
-                    Image(uiImage: image)
+                if let gifPath = gifPath {
+                    WebImage(url: URL(fileURLWithPath: gifPath))
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50, height: 50)
@@ -76,6 +77,7 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
+
 
 
 

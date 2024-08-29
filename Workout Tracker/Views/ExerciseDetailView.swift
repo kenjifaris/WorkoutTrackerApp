@@ -18,12 +18,21 @@ struct ExerciseDetailView: View {
                 VStack {
                     // Display the GIF using SDWebImageSwiftUI with local file
                     if let gifFileName = exercise.gifFileName,
-                       let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil),
-                       let gifUrl = URL(string: gifPath) {
-                        WebImage(url: gifUrl)
+                       let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
+                        WebImage(url: URL(fileURLWithPath: gifPath))
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .padding()
+                            .onAppear {
+                                print("GIF should be playing from path: \(gifPath)")
+                            }
+                    } else {
+                        // Fallback in case GIF is not found
+                        Image(systemName: "photo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding()
+                            .foregroundColor(.gray)
                     }
                     
                     // Display the instructions
@@ -62,6 +71,7 @@ struct ExerciseDetailView: View {
         }
     }
 }
+
 
 
 

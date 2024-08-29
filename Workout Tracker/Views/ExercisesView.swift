@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import SDWebImageSwiftUI
 
 struct ExercisesView: View {
     @State private var exercises: [ExerciseModel] = []
@@ -15,7 +16,6 @@ struct ExercisesView: View {
     @State private var searchText: String = ""
     @State private var selectedBodyPart: String? = nil
     @State private var selectedEquipment: String? = nil
-    @State private var selectedExercises: [ExerciseModel] = []
     @State private var isLoading = false
 
     // State to manage sheet presentation
@@ -23,6 +23,9 @@ struct ExercisesView: View {
     @State private var isEquipmentSheetPresented = false
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
+
+    // State for selected exercise to display in sheet
+    @State private var selectedExercise: ExerciseModel? = nil
 
     // Mapping dictionaries to condense categories
     private let equipmentMapping: [String: String] = [
@@ -111,73 +114,21 @@ struct ExercisesView: View {
 
                 // Exercise List
                 List(filteredExercises) { exercise in
-                    HStack {
-                        // Display exercise image or GIF
-                        if let gifFileName = exercise.gifFileName,
-                           let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360"),
-                           let image = UIImage(contentsOfFile: gifPath) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .cornerRadius(8)
-                        } else {
-                            Image(systemName: "photo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        }
-
-                        VStack(alignment: .leading) {
-                            Text(exercise.name)
-                                .font(.headline)
-
-                            Text(exercise.target)
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-
-                            Text(exercise.equipment)
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-
-                        Spacer()
-
-                        Button(action: {
-                            toggleSelection(for: exercise)
-                        }) {
-                            Image(systemName: selectedExercises.contains(exercise) ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(selectedExercises.contains(exercise) ? .blue : .gray)
-                                .font(.title2)
-                        }
+                    Button(action: {
+                        selectedExercise = exercise
+                    }) {
+                        ExerciseRowView(exercise: exercise)
                     }
-                    .padding(.vertical, 5)
-                    .onTapGesture {
-                        toggleSelection(for: exercise)
-                    }
-                }
-
-                // Selected Exercises Summary
-                if !selectedExercises.isEmpty {
-                    HStack {
-                        Text("Selected: \(selectedExercises.count) Exercises")
-                            .font(.headline)
-                        Spacer()
-                        Button(action: finalizeWorkout) {
-                            Text("Finalize")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .padding()
-                    .background(Color(.systemGray6))
+                    .buttonStyle(PlainButtonStyle()) // To prevent default button styling
                 }
             }
             .navigationTitle("Exercises")
             .onAppear(perform: {
                 loadExercisesFromFirebase()
             }) // Load from Firestore
+            .sheet(item: $selectedExercise) { exercise in
+                ExerciseDetailView(exercise: exercise)
+            }
         }
     }
 
@@ -277,19 +228,6 @@ struct ExercisesView: View {
             }
         }
     }
-
-    private func toggleSelection(for exercise: ExerciseModel) {
-        if let index = selectedExercises.firstIndex(of: exercise) {
-            selectedExercises.remove(at: index)
-        } else {
-            selectedExercises.append(exercise)
-        }
-    }
-
-    private func finalizeWorkout() {
-        // Navigate to a summary page or perform the desired action
-        print("Finalized workout with \(selectedExercises.count) exercises.")
-    }
 }
 
 struct ExercisesView_Previews: PreviewProvider {
@@ -297,6 +235,9 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+
+
 
 
 
