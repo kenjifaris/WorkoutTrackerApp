@@ -17,34 +17,12 @@ struct ExercisesView: View {
     @State private var selectedEquipment: String? = nil
     @State private var selectedExercises: [ExerciseModel] = []
     @State private var isLoading = false
-    @State private var selectedExercise: ExerciseModel?
 
     // State to manage sheet presentation
     @State private var isBodyPartSheetPresented = false
     @State private var isEquipmentSheetPresented = false
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
-
-    // Mapping dictionaries to condense categories
-    private let equipmentMapping: [String: String] = [
-        "Elliptical Machine": "Machine",
-        "Leverage Machine": "Machine",
-        "Sled Machine": "Machine",
-        "Stepmill Machine": "Machine",
-        "Stationary Bike": "Machine",
-        "Hammer": "Other",
-        "Trap Bar": "Other",
-        "Rope": "Other",
-        "Wheel Roller": "Other",
-    ]
-    
-    private let bodyPartMapping: [String: String] = [
-        "Lower Legs": "Legs",
-        "Upper Legs": "Legs",
-        "Lower Arms": "Arms",
-        "Upper Arms": "Arms",
-        "Waist": "Core",
-    ]
 
     var body: some View {
         NavigationView {
@@ -109,20 +87,50 @@ struct ExercisesView: View {
                 // Exercise List
                 List(filteredExercises) { exercise in
                     HStack {
-                        ExerciseRowView(exercise: exercise)
+                        // Display exercise image or GIF
+                        if let gifFileName = exercise.gifFileName,
+                           let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360"),
+                           let image = UIImage(contentsOfFile: gifPath) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .cornerRadius(8)
+                        } else {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                        }
+
+                        VStack(alignment: .leading) {
+                            Text(exercise.name)
+                                .font(.headline)
+
+                            Text(exercise.target)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+
+                            Text(exercise.equipment)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
 
                         Spacer()
 
-                        // Info button to view exercise details
                         Button(action: {
-                            selectedExercise = exercise
+                            toggleSelection(for: exercise)
                         }) {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.blue)
+                            Image(systemName: selectedExercises.contains(exercise) ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(selectedExercises.contains(exercise) ? .blue : .gray)
                                 .font(.title2)
                         }
                     }
                     .padding(.vertical, 5)
+                    .onTapGesture {
+                        toggleSelection(for: exercise)
+                    }
                 }
 
                 // Selected Exercises Summary
@@ -143,29 +151,37 @@ struct ExercisesView: View {
             }
             .navigationTitle("Exercises")
             .onAppear(perform: loadExercisesFromFirebase) // Load from Firestore
-            .sheet(item: $selectedExercise) { exercise in
-                ExerciseDetailView(exercise: exercise)
-            }
         }
     }
 
     // Fetch body parts from Firestore
     private func fetchBodyParts() {
         let db = Firestore.firestore()
-        db.collection("exercises").getDocuments { (snapshot, error) in
-            guard let snapshot = snapshot else {
-                print("Failed to fetch body parts: \(error?.localizedDescription ?? "Unknown error")")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            if let error = error {
+                print("Error fetching body parts: \(error.localizedDescription)")
                 return
             }
+            
+            guard let document = document, let exercisesArray = document.data()?["exercises"] as? [[String: Any]] else {
+                print("No exercises found or data is not an array")
+                return
+            }
+
+            print("Exercises Array: \(exercisesArray)")
+
             var bodyPartsSet = Set<String>()
-            for document in snapshot.documents {
-                if let bodyPart = document.data()["bodyPart"] as? String {
-                    let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
-                    bodyPartsSet.insert(mappedBodyPart)
+            for exerciseData in exercisesArray {
+                if let bodyPart = exerciseData["bodyPart"] as? String {
+                    print("Found body part: \(bodyPart)")  // Debug log
+                    bodyPartsSet.insert(bodyPart)
                 }
             }
             DispatchQueue.main.async {
                 self.bodyParts = Array(bodyPartsSet).sorted()
+                print("Body Parts Set: \(self.bodyParts)")  // Debug log
                 self.isBodyPartSheetPresented = true // Show sheet after fetching data
             }
         }
@@ -174,20 +190,31 @@ struct ExercisesView: View {
     // Fetch equipment from Firestore
     private func fetchEquipments() {
         let db = Firestore.firestore()
-        db.collection("exercises").getDocuments { (snapshot, error) in
-            guard let snapshot = snapshot else {
-                print("Failed to fetch equipment: \(error?.localizedDescription ?? "Unknown error")")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            if let error = error {
+                print("Error fetching equipment: \(error.localizedDescription)")
                 return
             }
+            
+            guard let document = document, let exercisesArray = document.data()?["exercises"] as? [[String: Any]] else {
+                print("No exercises found or data is not an array")
+                return
+            }
+
+            print("Exercises Array: \(exercisesArray)")
+
             var equipmentsSet = Set<String>()
-            for document in snapshot.documents {
-                if let equipment = document.data()["equipment"] as? String {
-                    let mappedEquipment = equipmentMapping[equipment] ?? equipment
-                    equipmentsSet.insert(mappedEquipment)
+            for exerciseData in exercisesArray {
+                if let equipment = exerciseData["equipment"] as? String {
+                    print("Found equipment: \(equipment)")  // Debug log
+                    equipmentsSet.insert(equipment)
                 }
             }
             DispatchQueue.main.async {
                 self.equipments = Array(equipmentsSet).sorted()
+                print("Equipments Set: \(self.equipments)")  // Debug log
                 self.isEquipmentSheetPresented = true // Show sheet after fetching data
             }
         }
@@ -196,10 +223,8 @@ struct ExercisesView: View {
     // Filter exercises
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
-            let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
-            let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
-            let matchesBodyPart = selectedBodyPart == nil || mappedBodyPart == selectedBodyPart
-            let matchesEquipment = selectedEquipment == nil || mappedEquipment == selectedEquipment
+            let matchesBodyPart = selectedBodyPart == nil || exercise.bodyPart == selectedBodyPart
+            let matchesEquipment = selectedEquipment == nil || exercise.equipment == selectedEquipment
             let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
 
             return matchesBodyPart && matchesEquipment && matchesText
@@ -230,14 +255,17 @@ struct ExercisesView: View {
         }
     }
 
-    private func addExercise(_ exercise: ExerciseModel) {
-        if !selectedExercises.contains(exercise) {
+    private func toggleSelection(for exercise: ExerciseModel) {
+        if let index = selectedExercises.firstIndex(of: exercise) {
+            selectedExercises.remove(at: index)
+        } else {
             selectedExercises.append(exercise)
         }
     }
 
     private func finalizeWorkout() {
         // Navigate to a summary page or perform the desired action
+        print("Finalized workout with \(selectedExercises.count) exercises.")
     }
 }
 
@@ -246,6 +274,11 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+
+
+
+
 
 
 
