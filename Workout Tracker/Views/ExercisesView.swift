@@ -209,18 +209,20 @@ struct ExercisesView: View {
     // Load exercises from Firestore
     private func loadExercisesFromFirebase() {
         let db = Firestore.firestore()
-        db.collection("exercises").getDocuments { (snapshot, error) in
-            guard let snapshot = snapshot else {
-                print("Failed to fetch exercises: \(error?.localizedDescription ?? "Unknown error")")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            guard let document = document, document.exists else {
+                print("Document does not exist: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
+            
             do {
-                let exercises = try snapshot.documents.compactMap { document -> ExerciseModel? in
-                    return try? document.data(as: ExerciseModel.self)
-                }
-                DispatchQueue.main.async {
-                    self.exercises = exercises
-                    self.filteredExercises = exercises
+                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
+                    self.exercises = try exercisesArray.compactMap { dict -> ExerciseModel? in
+                        return try? JSONDecoder().decode(ExerciseModel.self, from: JSONSerialization.data(withJSONObject: dict))
+                    }
+                    self.filteredExercises = self.exercises
                 }
             } catch {
                 print("Failed to decode exercises: \(error)")
@@ -244,6 +246,8 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
+
 
 
 

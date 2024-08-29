@@ -46,6 +46,15 @@ struct AdminExerciseManagerView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
+                // Filter Button Example
+                Button("Filter by Body Part: Abs") {
+                    filterExercises(by: "abs")
+                }
+                .padding()
+                .background(Color.purple)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+
                 List {
                     ForEach(exercises, id: \.id) { exercise in
                         HStack {
@@ -110,11 +119,6 @@ struct AdminExerciseManagerView: View {
                             saveSelectedExercises()
                         }
                     }
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Duplicate Document") {
-                            duplicateDocument(from: "user_exercises", to: "user_exercises_4", in: "public")
-                        }
-                    }
                 }
             }
         }
@@ -126,21 +130,29 @@ struct AdminExerciseManagerView: View {
     }
 
     private func fetchExercises() {
-        ExerciseDBService().fetchAllExercises { result in
-            switch result {
-            case .success(let exercises):
-                DispatchQueue.main.async {
-                    self.exercises = exercises
+        let db = Firestore.firestore()
+        db.collection("exercises").getDocuments { snapshot, error in
+            guard let snapshot = snapshot else {
+                print("Failed to fetch exercises: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            do {
+                let fetchedExercises = try snapshot.documents.compactMap { document -> ExerciseModel? in
+                    return try? document.data(as: ExerciseModel.self)
                 }
-            case .failure(let error):
-                print("Failed to fetch exercises: \(error)")
+                DispatchQueue.main.async {
+                    // No filter applied initially; load all exercises
+                    self.exercises = fetchedExercises
+                }
+            } catch {
+                print("Failed to decode exercises: \(error)")
             }
         }
     }
 
     private func fetchSelectedExercises() {
         let db = Firestore.firestore()
-        let docRef = db.collection("public").document("user_exercises")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
 
         docRef.getDocument { document, error in
             if let document = document, document.exists {
@@ -168,14 +180,17 @@ struct AdminExerciseManagerView: View {
     private func saveSelectedExercises() {
         let db = Firestore.firestore()
         let selectedExerciseModels = exercises.filter { selectedExercises.contains($0.id) }
+        
+        let documentID = "exercisesview_list" // Custom name for the document ID
+        
         do {
             let data = try JSONEncoder().encode(selectedExerciseModels)
             if let exercisesDict = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [[String: Any]] {
-                db.collection("public").document("user_exercises").setData(["exercises": exercisesDict]) { error in
+                db.collection("saved_exercises").document(documentID).setData(["exercises": exercisesDict]) { error in
                     if let error = error {
                         print("Failed to save exercises to Firebase: \(error)")
                     } else {
-                        print("Exercises successfully saved to Firebase")
+                        print("Exercises successfully saved to Firebase in 'saved_exercises' collection with ID: \(documentID)")
                     }
                 }
             }
@@ -184,25 +199,10 @@ struct AdminExerciseManagerView: View {
         }
     }
 
-    private func duplicateDocument(from sourceDocID: String, to targetDocID: String, in collection: String) {
-        let db = Firestore.firestore()
-        let sourceDocRef = db.collection(collection).document(sourceDocID)
-        let targetDocRef = db.collection(collection).document(targetDocID)
-        
-        sourceDocRef.getDocument { (document, error) in
-            if let document = document, document.exists {
-                if let data = document.data() {
-                    targetDocRef.setData(data) { error in
-                        if let error = error {
-                            print("Error duplicating document: \(error.localizedDescription)")
-                        } else {
-                            print("Document successfully duplicated!")
-                        }
-                    }
-                }
-            } else {
-                print("Source document does not exist or failed to fetch: \(error?.localizedDescription ?? "Unknown error")")
-            }
+    private func filterExercises(by criteria: String) {
+        self.exercises = self.exercises.filter { exercise in
+            // Example: filter by body part
+            return exercise.bodyPart.lowercased() == criteria.lowercased()
         }
     }
 }
@@ -213,6 +213,8 @@ struct AdminExerciseManagerView_Previews: PreviewProvider {
         AdminExerciseManagerView()
     }
 }
+
+
 
 
 
