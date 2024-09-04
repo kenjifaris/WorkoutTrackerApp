@@ -16,11 +16,13 @@ struct ExercisesView: View {
     @State private var searchText: String = ""
     @State private var selectedBodyPart: String? = nil
     @State private var selectedEquipment: String? = nil
+    @State private var selectedSplit: String? = nil // New state for split filtering
     @State private var isLoading = false
 
     // State to manage sheet presentation
     @State private var isBodyPartSheetPresented = false
     @State private var isEquipmentSheetPresented = false
+    @State private var isSplitSheetPresented = false // New state for split presentation
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
 
@@ -46,6 +48,13 @@ struct ExercisesView: View {
         "Waist": "Core"
     ]
 
+    // Define the mapping for workout splits
+    private let splitMapping: [String: [String]] = [
+        "Push": ["Pectorals", "Shoulders", "Triceps", "Delts", "Lats" ], // Push day includes chest, shoulders, and triceps
+        "Pull": ["Back", "Biceps", "Upper Arms", "Traps", "Upper Back", "Lower Back" ],                // Pull day includes back and biceps
+        "Legs": ["Quads", "Hamstrings", "Calves", "Glutes", "Lower Legs", "Upper Legs"] // Leg day includes legs
+    ]
+
     var body: some View {
         NavigationView {
             VStack {
@@ -53,8 +62,9 @@ struct ExercisesView: View {
                 SearchBar(text: $searchText, onTextChanged: filterExercises)
                     .padding(.top)
 
-                // Filter Buttons
+                // Filter Buttons (Body Part, Equipment, Splits)
                 HStack(spacing: 16) {
+                    // Body Part Button
                     Button(action: {
                         fetchBodyParts()
                         isBodyPartSheetPresented = true
@@ -82,6 +92,7 @@ struct ExercisesView: View {
                         }
                     }
 
+                    // Equipment Button
                     Button(action: {
                         fetchEquipments()
                         isEquipmentSheetPresented = true
@@ -104,6 +115,33 @@ struct ExercisesView: View {
                                     selectedEquipment = equipment
                                     filterExercises(searchText)
                                     isEquipmentSheetPresented = false
+                                }
+                            }
+                        }
+                    }
+
+                    // Splits Button
+                    Button(action: {
+                        isSplitSheetPresented = true
+                    }) {
+                        Text(selectedSplit ?? "Splits")
+                            .font(.subheadline)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                    .sheet(isPresented: $isSplitSheetPresented) {
+                        List {
+                            Button("Splits") {
+                                selectedSplit = nil
+                                filterExercises(searchText)
+                                isSplitSheetPresented = false
+                            }
+                            ForEach(splitMapping.keys.sorted(), id: \.self) { split in
+                                Button(split) {
+                                    selectedSplit = split
+                                    filterExercises(searchText)
+                                    isSplitSheetPresented = false
                                 }
                             }
                         }
@@ -192,36 +230,39 @@ struct ExercisesView: View {
         }
     }
 
-    // Filter exercises based on multiple fields (name, body part, equipment, secondary muscles, target)
+    // Filter exercises based on search, body part, equipment, and splits
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
             let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
             let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
-            
+
             // Convert fields to lowercase for case-insensitive search
             let searchText = text.lowercased()
-            
+
             let nameMatches = exercise.name.lowercased().contains(searchText)
             let bodyPartMatches = mappedBodyPart.lowercased().contains(searchText)
             let equipmentMatches = mappedEquipment.lowercased().contains(searchText)
             let targetMatches = exercise.target.lowercased().contains(searchText)
-            
+
             // Check if any of the secondary muscles match the search text
             let secondaryMuscleMatches = exercise.secondaryMuscles?.contains(where: { muscle in
                 muscle.lowercased().contains(searchText)
             }) ?? false
-            
-            // Ensure the exercise matches body part and equipment filters (if selected)
+
+            // Ensure the exercise matches body part, equipment, and split filters (if selected)
             let matchesBodyPartFilter = selectedBodyPart == nil || mappedBodyPart.lowercased() == selectedBodyPart?.lowercased()
             let matchesEquipmentFilter = selectedEquipment == nil || mappedEquipment.lowercased() == selectedEquipment?.lowercased()
 
-            // When the search bar is empty, only apply the body part/equipment filters
+            // Split filter: Check if the target matches any of the selected split's muscles
+            let matchesSplitFilter = selectedSplit == nil || splitMapping[selectedSplit!]?.contains(exercise.target) ?? false
+
+            // When the search bar is empty, only apply the body part, equipment, and split filters
             if searchText.isEmpty {
-                return matchesBodyPartFilter && matchesEquipmentFilter
+                return matchesBodyPartFilter && matchesEquipmentFilter && matchesSplitFilter
             }
 
-            // Return true if the search term matches any field, and the body part/equipment filters are respected
-            return (nameMatches || bodyPartMatches || equipmentMatches || targetMatches || secondaryMuscleMatches) && matchesBodyPartFilter && matchesEquipmentFilter
+            // Return true if the search term matches any field, and the body part/equipment/split filters are respected
+            return (nameMatches || bodyPartMatches || equipmentMatches || targetMatches || secondaryMuscleMatches) && matchesBodyPartFilter && matchesEquipmentFilter && matchesSplitFilter
         }
     }
 
@@ -255,6 +296,7 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
 
 
 
