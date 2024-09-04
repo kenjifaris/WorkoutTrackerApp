@@ -1,74 +1,184 @@
-would I need to change anything in my ExerciseRowView file? 
+Here is the code for the 'ExerciseDetailView' and 'FirestoreService'. Also, I attached photos of the Xcode project and the firebase database so you can see the structure...
 
+
+
+'ExerciseDetailView'
 
 import SwiftUI
+import SDWebImageSwiftUI
 
-struct ExerciseRowView: View {
-    let exercise: ExerciseModel
+struct ExerciseDetailView: View {
+    var exercise: ExerciseModel
 
     var body: some View {
-        HStack {
-            if let gifFileName = exercise.gifFileName {
-                // Use the folder reference path here
-                let gifPath = Bundle.main.path(forResource: "360/\(gifFileName)", ofType: nil)
-                
-                if let gifPath = gifPath, let image = UIImage(contentsOfFile: gifPath) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .cornerRadius(8)
-                } else {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.gray)
+        VStack {
+            // TabView to switch between About, History, Charts, PRs
+            TabView {
+                VStack {
+                    // Display the GIF using SDWebImageSwiftUI with local file
+                    if let gifFileName = exercise.gifFileName,
+                       let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
+                        WebImage(url: URL(fileURLWithPath: gifPath))
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding()
+                            .onAppear {
+                                print("GIF should be playing from path: \(gifPath)")
+                            }
+                    } else {
+                        // Fallback in case GIF is not found
+                        Image(systemName: "photo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding()
+                            .foregroundColor(.gray)
+                    }
+                    
+                    // Display the instructions
+                    Text("Instructions")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    ForEach(exercise.instructions ?? [], id: \.self) { instruction in
+                        Text(instruction)
+                            .padding(.vertical, 2)
+                    }
                 }
-            } else {
-                Image(systemName: "photo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.gray)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(exercise.name)
-                    .font(.headline)
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
                 
-                Text(exercise.target)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                // Other tabs (History, Charts, PRs)
+                Text("History Content")
+                    .tabItem {
+                        Label("History", systemImage: "clock.arrow.circlepath")
+                    }
                 
-                Text(exercise.equipment)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                Text("Charts Content")
+                    .tabItem {
+                        Label("Charts", systemImage: "chart.bar")
+                    }
+                
+                Text("PRs Content")
+                    .tabItem {
+                        Label("PRs", systemImage: "rosette")
+                    }
             }
-
-            Spacer()
+            .padding()
+            .navigationTitle(exercise.name)
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .padding(.vertical, 8)
     }
 }
 
-struct ExerciseRowView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExerciseRowView(exercise: ExerciseModel(
-            id: "0001",
-            name: "Push Up",
-            target: "Chest",
-            bodyPart: "Chest",
-            equipment: "Body weight",
-            category: "Strength",
-            gifFileName: "0001.gif",
-            secondaryMuscles: ["Triceps", "Shoulders"],
-            instructions: [
-                "Start in a high plank position with your hands placed slightly wider than shoulder-width apart.",
-                "Lower your body until your chest nearly touches the floor.",
-                "Push back up to the starting position.",
-                "Repeat for the desired number of repetitions."
-            ]
-        ))
+
+'FirestoreService'
+
+
+import Foundation
+import FirebaseFirestore
+
+class FirestoreService {
+    static let shared = FirestoreService()
+    
+    private init() {}
+    
+    // Helper function to capitalize the first letter of each word in a string
+    private func capitalizeWords(in text: String) -> String {
+        return text.capitalized
+    }
+    
+    // Helper function to capitalize all words in an array of strings
+    private func capitalizeWords(in array: [String]) -> [String] {
+        return array.map { $0.capitalized }
+    }
+    
+    // Method to update and capitalize exercise fields specifically in 'saved_exercises/exercisesview_list'
+    func updateAndCapitalizeExerciseFields() {
+        let db = Firestore.firestore()
+        let documentRef = db.collection("saved_exercises").document("exercisesview_list")
+
+        documentRef.getDocument { [weak self] document, error in
+            guard let self = self else { return }  // Ensure self exists
+            guard let document = document, document.exists, var exerciseDataArray = document.data()?["exercises"] as? [[String: Any]], error == nil else {
+                print("Error fetching exercises: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+            for i in 0..<exerciseDataArray.count {
+                var exerciseData = exerciseDataArray[i]
+
+                // Capitalize the relevant fields
+                if let name = exerciseData["name"] as? String {
+                    exerciseData["name"] = self.capitalizeWords(in: name)
+                }
+                if let target = exerciseData["target"] as? String {
+                    exerciseData["target"] = self.capitalizeWords(in: target)
+                }
+                if let bodyPart = exerciseData["bodyPart"] as? String {
+                    exerciseData["bodyPart"] = self.capitalizeWords(in: bodyPart)
+                }
+                if let equipment = exerciseData["equipment"] as? String {
+                    exerciseData["equipment"] = self.capitalizeWords(in: equipment)
+                }
+                if let secondaryMuscles = exerciseData["secondaryMuscles"] as? [String] {
+                    exerciseData["secondaryMuscles"] = self.capitalizeWords(in: secondaryMuscles)
+                }
+
+                // Update the modified exercise data back into the array
+                exerciseDataArray[i] = exerciseData
+            }
+
+            // Update the Firestore document with the capitalized data
+            documentRef.updateData(["exercises": exerciseDataArray]) { error in
+                if let error = error {
+                    print("Failed to update exercises with capitalized fields: \(error.localizedDescription)")
+                } else {
+                    print("Successfully updated exercises with capitalized fields in 'saved_exercises/exercisesview_list'")
+                }
+            }
+        }
+    }
+
+    // Function to duplicate the 'exercisesview_list' document
+    func duplicateExercisesViewList(newDocumentID: String) {
+        let db = Firestore.firestore()
+        let originalDocRef = db.collection("saved_exercises").document("exercisesview_list")
+        let newDocRef = db.collection("saved_exercises").document(newDocumentID)
+
+        originalDocRef.getDocument { (document, error) in
+            guard let document = document, document.exists else {
+                print("Error fetching original document: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+            if let data = document.data() {
+                // Set the data into the new document
+                newDocRef.setData(data) { error in
+                    if let error = error {
+                        print("Error duplicating document: \(error.localizedDescription)")
+                    } else {
+                        print("Document successfully duplicated with ID: \(newDocumentID)")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Helper to convert the ExerciseModel to dictionary
+extension ExerciseModel {
+    var dictionary: [String: Any] {
+        return [
+            "id": id,
+            "name": name.capitalized,
+            "target": target.capitalized,
+            "bodyPart": bodyPart.capitalized,
+            "equipment": equipment.capitalized,
+            "category": category ?? "",
+            "gifFileName": gifFileName ?? "",
+            "secondaryMuscles": secondaryMuscles?.map { $0.capitalized } ?? [],
+            "instructions": instructions ?? []
+        ]
     }
 }
