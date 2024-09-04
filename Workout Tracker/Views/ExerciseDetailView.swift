@@ -13,59 +13,130 @@ struct ExerciseDetailView: View {
 
     var body: some View {
         VStack {
-            // Display the GIF with a fixed size
-            if let gifFileName = exercise.gifFileName,
-               let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
-                WebImage(url: URL(fileURLWithPath: gifPath))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 250) // Fixed height for the GIF
-                    .padding()
-                    .onAppear {
-                        print("GIF should be playing from path: \(gifPath)")
-                    }
-            } else {
-                // Fallback in case GIF is not found
-                Image(systemName: "photo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 250) // Fixed height for placeholder as well
-                    .padding()
-                    .foregroundColor(.gray)
-            }
-            
-            // Scrollable instructions
-            ScrollView {
-                VStack(alignment: .leading) {
-                    Text("Instructions")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    // Numbered instructions with proper alignment
-                    ForEach(exercise.instructions?.indices ?? 0..<0, id: \.self) { index in
-                        HStack(alignment: .top) {
-                            // Number with alignment
-                            Text("\(index + 1).")
-                                .fontWeight(.bold)
-                                .frame(width: 20, alignment: .leading)
-                                .alignmentGuide(.top) { _ in 0 }
-                            
-                            // Instruction text with proper alignment and wrapping
-                            Text(exercise.instructions?[index] ?? "")
-                                .fixedSize(horizontal: false, vertical: true) // Allows wrapping
-                                .alignmentGuide(.top) { _ in 0 }
+            // TabView to switch between About, History, Charts, PRs
+            TabView {
+                // About tab (GIF + exercise details + instructions)
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        
+                        // Display the GIF with a fixed size
+                        if let gifFileName = exercise.gifFileName,
+                           let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
+                            WebImage(url: URL(fileURLWithPath: gifPath))
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 250) // Fixed height for the GIF
+                                .padding()
+                                .onAppear {
+                                    print("GIF should be playing from path: \(gifPath)")
+                                }
+                        } else {
+                            // Fallback in case GIF is not found
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 250) // Fixed height for placeholder
+                                .padding()
+                                .foregroundColor(.gray)
                         }
-                        .padding(.vertical, 4)
+                        
+                        // Exercise Name as a Title
+                        Text(exercise.name)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .padding(.top, 10)
+                        
+                        // Body Part and Equipment in a horizontal layout
+                        HStack {
+                            Text("Body Part:")
+                                .fontWeight(.bold)
+                            Text(exercise.bodyPart)
+                            Spacer()
+                            Text("Equipment:")
+                                .fontWeight(.bold)
+                            Text(exercise.equipment)
+                        }
+                        .padding(.vertical, 2)
+
+                        // Target and Secondary Muscles in a horizontal layout
+                        HStack(alignment: .top) {
+                            Text("Target:")
+                                .fontWeight(.bold)
+                            Text(exercise.target)
+                            Spacer()
+                            Text("Secondary Muscles:")
+                                .fontWeight(.bold)
+                            VStack(alignment: .leading) {
+                                ForEach(exercise.secondaryMuscles ?? [], id: \.self) { muscle in
+                                    Text(muscle)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 2)
+                        
+                        Divider() // Divider to separate metadata and instructions
+                        
+                        // Instructions section
+                        Text("Instructions")
+                            .font(.headline)
+                            .padding(.top, 10)
+                        
+                        // Numbered instructions with alignment
+                        ForEach(exercise.instructions?.indices ?? 0..<0, id: \.self) { index in
+                            HStack(alignment: .top) {
+                                Text("\(index + 1).")
+                                    .fontWeight(.bold)
+                                    .frame(width: 20, alignment: .leading)
+                                    .alignmentGuide(.top) { _ in 0 }
+                                
+                                Text(exercise.instructions?[index] ?? "")
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .alignmentGuide(.top) { _ in 0 }
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
+                    .padding(.horizontal, 16) // Padding around the entire content
                 }
-                .padding([.leading, .trailing], 16) // Add horizontal padding for nicer layout
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
+                
+                // Other tabs for History, Charts, and PRs
+                VStack {
+                    Text("History Content")
+                        .font(.headline)
+                }
+                .tabItem {
+                    Label("History", systemImage: "clock.arrow.circlepath")
+                }
+                
+                VStack {
+                    Text("Charts Content")
+                        .font(.headline)
+                }
+                .tabItem {
+                    Label("Charts", systemImage: "chart.bar")
+                }
+                
+                VStack {
+                    Text("PRs Content")
+                        .font(.headline)
+                }
+                .tabItem {
+                    Label("PRs", systemImage: "rosette")
+                }
             }
+            .padding(.bottom, 20) // Avoid cutting off tab content
         }
-        .padding(.bottom, 20) // Avoid cutting off content at the bottom
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
+
+
+
 
 
 
