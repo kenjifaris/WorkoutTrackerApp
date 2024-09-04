@@ -11,6 +11,15 @@ import SDWebImageSwiftUI
 struct ExerciseRowView: View {
     let exercise: ExerciseModel
 
+    // Create a bodyPartMapping to simplify the body part
+    private let bodyPartMapping: [String: String] = [
+        "Lower Legs": "Legs",
+        "Upper Legs": "Legs",
+        "Lower Arms": "Arms",
+        "Upper Arms": "Arms",
+        "Waist": "Core"
+    ]
+
     var body: some View {
         HStack {
             if let gifFileName = exercise.gifFileName {
@@ -43,12 +52,10 @@ struct ExerciseRowView: View {
                 Text(exercise.name)
                     .font(.headline)
                 
-                // Display the target (main muscle group)
-                Text(exercise.target)
+                // Simplify the body part using the mapping, fallback to original if not in the map
+                Text(bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart)
                     .font(.subheadline)
                     .foregroundColor(.gray)
-
-                // Removed the equipment field
             }
 
             Spacer()
@@ -57,14 +64,13 @@ struct ExerciseRowView: View {
     }
 }
 
-
 struct ExerciseRowView_Previews: PreviewProvider {
     static var previews: some View {
         ExerciseRowView(exercise: ExerciseModel(
             id: "0001",
             name: "Push Up",
             target: "Chest",
-            bodyPart: "Chest",
+            bodyPart: "Upper Arms", // Will be mapped to "Arms"
             equipment: "Body weight",
             category: "Strength",
             gifFileName: "0001.gif",
@@ -78,6 +84,8 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
+
+
 
 
 
