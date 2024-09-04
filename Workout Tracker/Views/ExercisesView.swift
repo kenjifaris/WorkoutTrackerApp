@@ -192,16 +192,36 @@ struct ExercisesView: View {
         }
     }
 
-    // Filter exercises
+    // Filter exercises based on multiple fields (name, body part, equipment, secondary muscles, target)
     private func filterExercises(_ text: String) {
         filteredExercises = exercises.filter { exercise in
             let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
             let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
-            let matchesBodyPart = selectedBodyPart == nil || mappedBodyPart == selectedBodyPart
-            let matchesEquipment = selectedEquipment == nil || mappedEquipment == selectedEquipment
-            let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
+            
+            // Convert fields to lowercase for case-insensitive search
+            let searchText = text.lowercased()
+            
+            let nameMatches = exercise.name.lowercased().contains(searchText)
+            let bodyPartMatches = mappedBodyPart.lowercased().contains(searchText)
+            let equipmentMatches = mappedEquipment.lowercased().contains(searchText)
+            let targetMatches = exercise.target.lowercased().contains(searchText)
+            
+            // Check if any of the secondary muscles match the search text
+            let secondaryMuscleMatches = exercise.secondaryMuscles?.contains(where: { muscle in
+                muscle.lowercased().contains(searchText)
+            }) ?? false
+            
+            // Ensure the exercise matches body part and equipment filters (if selected)
+            let matchesBodyPartFilter = selectedBodyPart == nil || mappedBodyPart.lowercased() == selectedBodyPart?.lowercased()
+            let matchesEquipmentFilter = selectedEquipment == nil || mappedEquipment.lowercased() == selectedEquipment?.lowercased()
 
-            return matchesBodyPart && matchesEquipment && matchesText
+            // When the search bar is empty, only apply the body part/equipment filters
+            if searchText.isEmpty {
+                return matchesBodyPartFilter && matchesEquipmentFilter
+            }
+
+            // Return true if the search term matches any field, and the body part/equipment filters are respected
+            return (nameMatches || bodyPartMatches || equipmentMatches || targetMatches || secondaryMuscleMatches) && matchesBodyPartFilter && matchesEquipmentFilter
         }
     }
 
@@ -235,6 +255,7 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
+
 
 
 
