@@ -1,184 +1,235 @@
-Here is the code for the 'ExerciseDetailView' and 'FirestoreService'. Also, I attached photos of the Xcode project and the firebase database so you can see the structure...
+Okay great, now let's make changes to something else in a different file. I will send you the code to the 'ExercisesView'. In the photo you will see 'barbell' is in the name and also below the name for the equipment field. This is repetitive and I would like to remove the equipment from under the name. But I still want the users to beable to search for the different equipment for the exercises when they click on the 'Equipment' button. Here is the code for 'ExercisesView'
 
 
-
-'ExerciseDetailView'
+'ExercisesView'
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 import SDWebImageSwiftUI
 
-struct ExerciseDetailView: View {
-    var exercise: ExerciseModel
+struct ExercisesView: View {
+    @State private var exercises: [ExerciseModel] = []
+    @State private var filteredExercises: [ExerciseModel] = []
+    @State private var searchText: String = ""
+    @State private var selectedBodyPart: String? = nil
+    @State private var selectedEquipment: String? = nil
+    @State private var isLoading = false
+
+    // State to manage sheet presentation
+    @State private var isBodyPartSheetPresented = false
+    @State private var isEquipmentSheetPresented = false
+    @State private var bodyParts: [String] = []
+    @State private var equipments: [String] = []
+
+    // State for selected exercise to display in sheet
+    @State private var selectedExercise: ExerciseModel? = nil
+
+    // Mapping dictionaries to condense categories
+    private let equipmentMapping: [String: String] = [
+        "Elliptical Machine": "Machine",
+        "Leverage Machine": "Machine",
+        "Sled Machine": "Machine",
+        "Stepmill Machine": "Machine",
+        "Rope": "Other",
+        "Trap Bar": "Other",
+        "Body Weight": "Other"
+    ]
+    
+    private let bodyPartMapping: [String: String] = [
+        "Lower Legs": "Legs",
+        "Upper Legs": "Legs",
+        "Lower Arms": "Arms",
+        "Upper Arms": "Arms",
+        "Waist": "Core"
+    ]
 
     var body: some View {
-        VStack {
-            // TabView to switch between About, History, Charts, PRs
-            TabView {
-                VStack {
-                    // Display the GIF using SDWebImageSwiftUI with local file
-                    if let gifFileName = exercise.gifFileName,
-                       let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
-                        WebImage(url: URL(fileURLWithPath: gifPath))
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+        NavigationView {
+            VStack {
+                // Search Bar
+                SearchBar(text: $searchText, onTextChanged: filterExercises)
+                    .padding(.top)
+
+                // Filter Buttons
+                HStack(spacing: 16) {
+                    Button(action: {
+                        fetchBodyParts()
+                        isBodyPartSheetPresented = true
+                    }) {
+                        Text(selectedBodyPart ?? "Body Part")
+                            .font(.subheadline)
                             .padding()
-                            .onAppear {
-                                print("GIF should be playing from path: \(gifPath)")
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                    .sheet(isPresented: $isBodyPartSheetPresented) {
+                        List {
+                            Button("Body Part") {
+                                selectedBodyPart = nil
+                                filterExercises(searchText)
+                                isBodyPartSheetPresented = false
                             }
-                    } else {
-                        // Fallback in case GIF is not found
-                        Image(systemName: "photo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            ForEach(bodyParts, id: \.self) { part in
+                                Button(part) {
+                                    selectedBodyPart = part
+                                    filterExercises(searchText)
+                                    isBodyPartSheetPresented = false
+                                }
+                            }
+                        }
+                    }
+
+                    Button(action: {
+                        fetchEquipments()
+                        isEquipmentSheetPresented = true
+                    }) {
+                        Text(selectedEquipment ?? "Equipment")
+                            .font(.subheadline)
                             .padding()
-                            .foregroundColor(.gray)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
                     }
-                    
-                    // Display the instructions
-                    Text("Instructions")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    ForEach(exercise.instructions ?? [], id: \.self) { instruction in
-                        Text(instruction)
-                            .padding(.vertical, 2)
+                    .sheet(isPresented: $isEquipmentSheetPresented) {
+                        List {
+                            Button("Equipment") {
+                                selectedEquipment = nil
+                                filterExercises(searchText)
+                                isEquipmentSheetPresented = false
+                            }
+                            ForEach(equipments, id: \.self) { equipment in
+                                Button(equipment) {
+                                    selectedEquipment = equipment
+                                    filterExercises(searchText)
+                                    isEquipmentSheetPresented = false
+                                }
+                            }
+                        }
                     }
                 }
-                .tabItem {
-                    Label("About", systemImage: "info.circle")
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
+                // Exercise List
+                List(filteredExercises) { exercise in
+                    Button(action: {
+                        selectedExercise = exercise
+                    }) {
+                        ExerciseRowView(exercise: exercise)
+                    }
+                    .buttonStyle(PlainButtonStyle()) // To prevent default button styling
                 }
-                
-                // Other tabs (History, Charts, PRs)
-                Text("History Content")
-                    .tabItem {
-                        Label("History", systemImage: "clock.arrow.circlepath")
-                    }
-                
-                Text("Charts Content")
-                    .tabItem {
-                        Label("Charts", systemImage: "chart.bar")
-                    }
-                
-                Text("PRs Content")
-                    .tabItem {
-                        Label("PRs", systemImage: "rosette")
-                    }
             }
-            .padding()
-            .navigationTitle(exercise.name)
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Exercises")
+            .onAppear(perform: {
+                loadExercisesFromFirebase()
+            }) // Load from Firestore
+            .sheet(item: $selectedExercise) { exercise in
+                ExerciseDetailView(exercise: exercise)
+            }
         }
     }
-}
 
-
-'FirestoreService'
-
-
-import Foundation
-import FirebaseFirestore
-
-class FirestoreService {
-    static let shared = FirestoreService()
-    
-    private init() {}
-    
-    // Helper function to capitalize the first letter of each word in a string
-    private func capitalizeWords(in text: String) -> String {
-        return text.capitalized
-    }
-    
-    // Helper function to capitalize all words in an array of strings
-    private func capitalizeWords(in array: [String]) -> [String] {
-        return array.map { $0.capitalized }
-    }
-    
-    // Method to update and capitalize exercise fields specifically in 'saved_exercises/exercisesview_list'
-    func updateAndCapitalizeExerciseFields() {
+    // Fetch body parts from Firestore
+    private func fetchBodyParts() {
         let db = Firestore.firestore()
-        let documentRef = db.collection("saved_exercises").document("exercisesview_list")
-
-        documentRef.getDocument { [weak self] document, error in
-            guard let self = self else { return }  // Ensure self exists
-            guard let document = document, document.exists, var exerciseDataArray = document.data()?["exercises"] as? [[String: Any]], error == nil else {
-                print("Error fetching exercises: \(error?.localizedDescription ?? "Unknown error")")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            if let error = error {
+                print("Error fetching body parts: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let document = document, let exercisesArray = document.data()?["exercises"] as? [[String: Any]] else {
+                print("No exercises found or data is not an array")
                 return
             }
 
-            for i in 0..<exerciseDataArray.count {
-                var exerciseData = exerciseDataArray[i]
-
-                // Capitalize the relevant fields
-                if let name = exerciseData["name"] as? String {
-                    exerciseData["name"] = self.capitalizeWords(in: name)
-                }
-                if let target = exerciseData["target"] as? String {
-                    exerciseData["target"] = self.capitalizeWords(in: target)
-                }
+            var bodyPartsSet = Set<String>()
+            for exerciseData in exercisesArray {
                 if let bodyPart = exerciseData["bodyPart"] as? String {
-                    exerciseData["bodyPart"] = self.capitalizeWords(in: bodyPart)
+                    // Apply the body part mapping
+                    let mappedBodyPart = bodyPartMapping[bodyPart] ?? bodyPart
+                    bodyPartsSet.insert(mappedBodyPart)
                 }
-                if let equipment = exerciseData["equipment"] as? String {
-                    exerciseData["equipment"] = self.capitalizeWords(in: equipment)
-                }
-                if let secondaryMuscles = exerciseData["secondaryMuscles"] as? [String] {
-                    exerciseData["secondaryMuscles"] = self.capitalizeWords(in: secondaryMuscles)
-                }
-
-                // Update the modified exercise data back into the array
-                exerciseDataArray[i] = exerciseData
             }
-
-            // Update the Firestore document with the capitalized data
-            documentRef.updateData(["exercises": exerciseDataArray]) { error in
-                if let error = error {
-                    print("Failed to update exercises with capitalized fields: \(error.localizedDescription)")
-                } else {
-                    print("Successfully updated exercises with capitalized fields in 'saved_exercises/exercisesview_list'")
-                }
+            DispatchQueue.main.async {
+                self.bodyParts = Array(bodyPartsSet).sorted()
             }
         }
     }
 
-    // Function to duplicate the 'exercisesview_list' document
-    func duplicateExercisesViewList(newDocumentID: String) {
+    // Fetch equipment from Firestore
+    private func fetchEquipments() {
         let db = Firestore.firestore()
-        let originalDocRef = db.collection("saved_exercises").document("exercisesview_list")
-        let newDocRef = db.collection("saved_exercises").document(newDocumentID)
-
-        originalDocRef.getDocument { (document, error) in
-            guard let document = document, document.exists else {
-                print("Error fetching original document: \(error?.localizedDescription ?? "Unknown error")")
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            if let error = error {
+                print("Error fetching equipment: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let document = document, let exercisesArray = document.data()?["exercises"] as? [[String: Any]] else {
+                print("No exercises found or data is not an array")
                 return
             }
 
-            if let data = document.data() {
-                // Set the data into the new document
-                newDocRef.setData(data) { error in
-                    if let error = error {
-                        print("Error duplicating document: \(error.localizedDescription)")
-                    } else {
-                        print("Document successfully duplicated with ID: \(newDocumentID)")
-                    }
+            var equipmentsSet = Set<String>()
+            for exerciseData in exercisesArray {
+                if let equipment = exerciseData["equipment"] as? String {
+                    // Apply the equipment mapping
+                    let mappedEquipment = equipmentMapping[equipment] ?? equipment
+                    equipmentsSet.insert(mappedEquipment)
                 }
+            }
+            DispatchQueue.main.async {
+                self.equipments = Array(equipmentsSet).sorted()
+            }
+        }
+    }
+
+    // Filter exercises
+    private func filterExercises(_ text: String) {
+        filteredExercises = exercises.filter { exercise in
+            let mappedBodyPart = bodyPartMapping[exercise.bodyPart] ?? exercise.bodyPart
+            let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
+            let matchesBodyPart = selectedBodyPart == nil || mappedBodyPart == selectedBodyPart
+            let matchesEquipment = selectedEquipment == nil || mappedEquipment == selectedEquipment
+            let matchesText = text.isEmpty || exercise.name.lowercased().contains(text.lowercased())
+
+            return matchesBodyPart && matchesEquipment && matchesText
+        }
+    }
+
+    // Load exercises from Firestore
+    private func loadExercisesFromFirebase() {
+        let db = Firestore.firestore()
+        let docRef = db.collection("saved_exercises").document("exercisesview_list")
+        
+        docRef.getDocument { (document, error) in
+            guard let document = document, document.exists else {
+                print("Document does not exist: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            do {
+                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
+                    self.exercises = try exercisesArray.compactMap { dict -> ExerciseModel? in
+                        return try? JSONDecoder().decode(ExerciseModel.self, from: JSONSerialization.data(withJSONObject: dict))
+                    }
+                    self.filteredExercises = self.exercises
+                }
+            } catch {
+                print("Failed to decode exercises: \(error)")
             }
         }
     }
 }
 
-// Helper to convert the ExerciseModel to dictionary
-extension ExerciseModel {
-    var dictionary: [String: Any] {
-        return [
-            "id": id,
-            "name": name.capitalized,
-            "target": target.capitalized,
-            "bodyPart": bodyPart.capitalized,
-            "equipment": equipment.capitalized,
-            "category": category ?? "",
-            "gifFileName": gifFileName ?? "",
-            "secondaryMuscles": secondaryMuscles?.map { $0.capitalized } ?? [],
-            "instructions": instructions ?? []
-        ]
+struct ExercisesView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExercisesView()
     }
 }

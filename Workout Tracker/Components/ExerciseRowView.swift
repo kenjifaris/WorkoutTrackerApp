@@ -39,16 +39,16 @@ struct ExerciseRowView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
+                // Display the exercise name
                 Text(exercise.name)
                     .font(.headline)
                 
+                // Display the target (main muscle group)
                 Text(exercise.target)
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                
-                Text(exercise.equipment)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+
+                // Removed the equipment field
             }
 
             Spacer()
@@ -56,6 +56,7 @@ struct ExerciseRowView: View {
         .padding(.vertical, 8)
     }
 }
+
 
 struct ExerciseRowView_Previews: PreviewProvider {
     static var previews: some View {
