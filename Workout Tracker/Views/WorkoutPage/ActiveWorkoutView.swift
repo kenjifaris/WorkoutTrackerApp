@@ -7,13 +7,17 @@
 
 import SwiftUI
 
+
+
 struct ActiveWorkoutView: View {
     @State private var workoutName: String = "Afternoon Workout"
     @State private var workoutDuration: TimeInterval = 0
-    
+    @State private var selectedExercises: [ExerciseModel] = [] // To store selected exercises
+    @State private var isExercisesViewPresented = false
+
     // Timer to keep track of workout duration
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // Timer and Title Row
@@ -55,10 +59,15 @@ struct ActiveWorkoutView: View {
             Text("Notes")
                 .font(.subheadline)
                 .foregroundColor(.gray)
-            
+
+            // Display selected exercises
+            List(selectedExercises) { exercise in
+                ExerciseRowView(exercise: exercise)
+            }
+
             // Add Exercises Button
             Button(action: {
-                // Add functionality to add exercises
+                isExercisesViewPresented = true
             }) {
                 Text("Add Exercises")
                     .font(.headline)
@@ -69,6 +78,10 @@ struct ActiveWorkoutView: View {
                     .cornerRadius(10)
             }
             .padding(.top, 20)
+            .sheet(isPresented: $isExercisesViewPresented) {
+                // Present ExercisesView and pass back selected exercises
+                ExercisesSelectionView(selectedExercises: $selectedExercises)
+            }
             
             // Cancel Workout Button
             Button(action: {
@@ -103,9 +116,5 @@ struct ActiveWorkoutView: View {
     }
 }
 
-struct ActiveWorkoutView_Previews: PreviewProvider {
-    static var previews: some View {
-        ActiveWorkoutView()
-    }
-}
+
 
