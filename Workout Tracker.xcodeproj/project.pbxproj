@@ -20,6 +20,7 @@
 		457843C42C8F73B5003F67F0 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457843C32C8F73B5003F67F0 /* WorkoutView.swift */; };
 		457843C62C8F7406003F67F0 /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457843C52C8F7406003F67F0 /* ActiveWorkoutView.swift */; };
 		457843CE2C8F835B003F67F0 /* ExercisesSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457843CD2C8F835B003F67F0 /* ExercisesSelectionView.swift */; };
+		457843D02C8F9249003F67F0 /* ExerciseSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457843CF2C8F9249003F67F0 /* ExerciseSet.swift */; };
 		458038FF2C73E8F600D84C94 /* Workout_TrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */; };
 		458039012C73E8F600D84C94 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458039002C73E8F600D84C94 /* ProfileView.swift */; };
 		458039032C73E8F700D84C94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 458039022C73E8F700D84C94 /* Assets.xcassets */; };
@@ -52,6 +53,7 @@
 		457843C32C8F73B5003F67F0 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
 		457843C52C8F7406003F67F0 /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
 		457843CD2C8F835B003F67F0 /* ExercisesSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesSelectionView.swift; sourceTree = "<group>"; };
+		457843CF2C8F9249003F67F0 /* ExerciseSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSet.swift; sourceTree = "<group>"; };
 		458038FB2C73E8F600D84C94 /* Workout Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Workout Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		458038FE2C73E8F600D84C94 /* Workout_TrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout_TrackerApp.swift; sourceTree = "<group>"; };
 		458039002C73E8F600D84C94 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				458039242C73F4C200D84C94 /* WorkoutTemplate.swift */,
 				458039262C73F4F400D84C94 /* SampleWorkoutTemplates.swift */,
 				458039342C7419CB00D84C94 /* ExerciseModel.swift */,
+				457843CF2C8F9249003F67F0 /* ExerciseSet.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -303,6 +306,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				457843D02C8F9249003F67F0 /* ExerciseSet.swift in Sources */,
 				458039012C73E8F600D84C94 /* ProfileView.swift in Sources */,
 				457843C12C8F72E7003F67F0 /* ExerciseDetailView.swift in Sources */,
 				4504F8D12C7E716600DD8383 /* FirestoreService.swift in Sources */,

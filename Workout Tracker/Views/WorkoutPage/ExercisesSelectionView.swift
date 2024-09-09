@@ -12,6 +12,9 @@ import SDWebImageSwiftUI
 struct ExercisesSelectionView: View {
     // Binding to pass the selected exercises back to ActiveWorkoutView
     @Binding var selectedExercises: [ExerciseModel]
+    
+    // Completion handler to notify when exercises are added
+    var onAdd: (() -> Void)? // New completion closure
 
     @State private var exercises: [ExerciseModel] = []
     @State private var filteredExercises: [ExerciseModel] = []
@@ -48,7 +51,7 @@ struct ExercisesSelectionView: View {
     ]
     
     private let splitMapping: [String: [String]] = [
-        "Push": ["Pectorals", "Shoulders", "Triceps", "Delts", "Lats" ],
+        "Push": ["Pectorals", "Shoulders", "Triceps", "Delts", "Lats"],
         "Pull": ["Back", "Biceps", "Upper Arms", "Traps", "Upper Back", "Lower Back"],
         "Legs": ["Quads", "Hamstrings", "Calves", "Glutes", "Lower Legs", "Upper Legs"]
     ]
@@ -178,11 +181,12 @@ struct ExercisesSelectionView: View {
             .navigationBarTitle("Select Exercises")
             .navigationBarItems(
                 leading: Button("Cancel") {
-                    selectedExercises = []
+                    selectedExercises = [] // Clear selection on cancel
                 },
-                trailing: Button("Done") {
-                    selectedExercises = filteredExercises.filter { selectedExercises.contains($0) }
+                trailing: Button("Add") {
+                    onAdd?() // Call the completion handler when "Add" is clicked
                 }
+                .disabled(selectedExercises.isEmpty) // Disable if no exercises are selected
             )
             .onAppear {
                 loadExercisesFromFirebase()
@@ -267,11 +271,11 @@ struct ExercisesSelectionView: View {
             let mappedEquipment = equipmentMapping[exercise.equipment] ?? exercise.equipment
 
             let searchText = text.lowercased()
-
             let nameMatches = exercise.name.lowercased().contains(searchText)
             let bodyPartMatches = mappedBodyPart.lowercased().contains(searchText)
             let equipmentMatches = mappedEquipment.lowercased().contains(searchText)
             let targetMatches = exercise.target.lowercased().contains(searchText)
+
             let secondaryMuscleMatches = exercise.secondaryMuscles?.contains(where: { muscle in
                 muscle.lowercased().contains(searchText)
             }) ?? false
@@ -317,12 +321,5 @@ struct ExercisesSelectionView: View {
     }
 }
 
-
-
-struct ExercisesSelectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExercisesSelectionView(selectedExercises: .constant([]))
-    }
-}
 
 

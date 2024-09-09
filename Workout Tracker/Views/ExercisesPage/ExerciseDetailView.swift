@@ -10,7 +10,7 @@ import SDWebImageSwiftUI
 
 struct ExerciseDetailView: View {
     var exercise: ExerciseModel
-
+    
     var body: some View {
         VStack {
             // TabView to switch between About, History, Charts, PRs
@@ -18,7 +18,6 @@ struct ExerciseDetailView: View {
                 // About tab (GIF + exercise details + instructions)
                 ScrollView {
                     VStack(alignment: .leading) {
-                        
                         // Display the GIF with a fixed size
                         if let gifFileName = exercise.gifFileName,
                            let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
@@ -27,9 +26,6 @@ struct ExerciseDetailView: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(height: 250) // Fixed height for the GIF
                                 .padding()
-                                .onAppear {
-                                    print("GIF should be playing from path: \(gifPath)")
-                                }
                         } else {
                             // Fallback in case GIF is not found
                             Image(systemName: "photo")
@@ -39,13 +35,13 @@ struct ExerciseDetailView: View {
                                 .padding()
                                 .foregroundColor(.gray)
                         }
-                        
+
                         // Exercise Name as a Title
                         Text(exercise.name)
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.top, 10)
-                        
+
                         // Body Part and Equipment in a horizontal layout
                         HStack {
                             Text("Body Part:")
@@ -73,14 +69,14 @@ struct ExerciseDetailView: View {
                             }
                         }
                         .padding(.vertical, 2)
-                        
+
                         Divider() // Divider to separate metadata and instructions
-                        
+
                         // Instructions section
                         Text("Instructions")
                             .font(.headline)
                             .padding(.top, 10)
-                        
+
                         // Numbered instructions with alignment
                         ForEach(exercise.instructions?.indices ?? 0..<0, id: \.self) { index in
                             HStack(alignment: .top) {
@@ -88,7 +84,7 @@ struct ExerciseDetailView: View {
                                     .fontWeight(.bold)
                                     .frame(width: 20, alignment: .leading)
                                     .alignmentGuide(.top) { _ in 0 }
-                                
+
                                 Text(exercise.instructions?[index] ?? "")
                                     .fixedSize(horizontal: false, vertical: true)
                                     .alignmentGuide(.top) { _ in 0 }
@@ -101,8 +97,8 @@ struct ExerciseDetailView: View {
                 .tabItem {
                     Label("About", systemImage: "info.circle")
                 }
-                
-                // Other tabs for History, Charts, and PRs
+
+                // History tab
                 VStack {
                     Text("History Content")
                         .font(.headline)
@@ -110,7 +106,8 @@ struct ExerciseDetailView: View {
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")
                 }
-                
+
+                // Charts tab
                 VStack {
                     Text("Charts Content")
                         .font(.headline)
@@ -118,7 +115,8 @@ struct ExerciseDetailView: View {
                 .tabItem {
                     Label("Charts", systemImage: "chart.bar")
                 }
-                
+
+                // PRs tab (Personal Records)
                 VStack {
                     Text("PRs Content")
                         .font(.headline)
@@ -133,6 +131,7 @@ struct ExerciseDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
 
 
 
