@@ -93,53 +93,56 @@ struct ActiveWorkoutView: View {
                         }
                         .buttonStyle(BorderlessButtonStyle()) // Prevents row tap on button click
                     }) {
-                        // Table Headers aligned correctly with text fields
-                        HStack {
+                        // Table Headers aligned correctly with text fields using LazyVGrid
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()), // Set
+                            GridItem(.flexible()), // Previous
+                            GridItem(.fixed(60)), // lbs (fixed width for consistency)
+                            GridItem(.fixed(60))  // Reps (fixed width for consistency)
+                        ], spacing: 10) {
                             Text("Set")
                                 .font(.caption)
                                 .fontWeight(.bold)
-                            Spacer()
+
                             Text("Previous")
                                 .font(.caption)
                                 .fontWeight(.bold)
-                            Spacer()
+
                             Text("lbs")
                                 .font(.caption)
                                 .fontWeight(.bold)
-                                .frame(width: 60) // Ensures alignment with the lbs text fields
+
                             Text("Reps")
                                 .font(.caption)
                                 .fontWeight(.bold)
-                                .frame(width: 60) // Ensures alignment with the Reps text fields
                         }
                         .padding(.horizontal)
 
                         // Display all sets for each exercise
                         if let sets = exerciseSets[exercise.id], !sets.isEmpty {
                             ForEach(sets.indices, id: \.self) { index in
-                                HStack {
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()), // Set
+                                    GridItem(.flexible()), // Previous
+                                    GridItem(.fixed(60)), // lbs (fixed width for consistency)
+                                    GridItem(.fixed(60))  // Reps (fixed width for consistency)
+                                ], spacing: 10) {
                                     Text("Set \(sets[index].setNumber)")
                                         .font(.subheadline)
-                                    Spacer()
+
                                     Text("-") // Placeholder for "Previous"
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
-                                    Spacer()
+
                                     TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                        .frame(width: 60)
+                                        .frame(width: 60) // Ensuring fixed width to match header
                                         .keyboardType(.decimalPad)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
+
                                     TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                        .frame(width: 60)
+                                        .frame(width: 60) // Ensuring fixed width to match header
                                         .keyboardType(.numberPad)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    Spacer()
-                                    Button(action: {
-                                        // Action for marking set as completed
-                                    }) {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.green)
-                                    }
                                 }
                                 .padding(.vertical, 4)
                             }
@@ -306,6 +309,8 @@ struct ActiveWorkoutView: View {
         )
     }
 }
+
+
 
 
 
