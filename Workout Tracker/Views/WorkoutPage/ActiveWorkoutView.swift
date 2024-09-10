@@ -127,30 +127,39 @@ struct ActiveWorkoutView: View {
                         // Display all sets for each exercise
                         if let sets = exerciseSets[exercise.id], !sets.isEmpty {
                             ForEach(sets.indices, id: \.self) { index in
-                                LazyVGrid(columns: [
-                                    GridItem(.flexible()), // Set
-                                    GridItem(.flexible()), // Previous
-                                    GridItem(.fixed(60)), // lbs (fixed width for consistency)
-                                    GridItem(.fixed(60))  // Reps (fixed width for consistency)
-                                ], spacing: 10) {
-                                    Text("Set \(sets[index].setNumber)")
-                                        .font(.subheadline)
+                                HStack {
+                                    LazyVGrid(columns: [
+                                        GridItem(.flexible()), // Set
+                                        GridItem(.flexible()), // Previous
+                                        GridItem(.fixed(60)), // lbs (fixed width for consistency)
+                                        GridItem(.fixed(60))  // Reps (fixed width for consistency)
+                                    ], spacing: 10) {
+                                        Text("Set \(sets[index].setNumber)")
+                                            .font(.subheadline)
 
-                                    Text("-") // Placeholder for "Previous"
-                                        .font(.subheadline)
-                                        .foregroundColor(.gray)
+                                        Text("-") // Placeholder for "Previous"
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
 
-                                    TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                        .frame(width: 60) // Ensuring fixed width to match header
-                                        .keyboardType(.decimalPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                            .frame(width: 60) // Ensuring fixed width to match header
+                                            .keyboardType(.decimalPad)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
 
-                                    TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                        .frame(width: 60) // Ensuring fixed width to match header
-                                        .keyboardType(.numberPad)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                            .frame(width: 60) // Ensuring fixed width to match header
+                                            .keyboardType(.numberPad)
+                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    }
+                                    .padding(.vertical, 4)
                                 }
-                                .padding(.vertical, 4)
+                                .swipeActions { // Enable swipe-to-delete
+                                    Button(role: .destructive) {
+                                        removeSet(for: exercise, at: index) // Call the remove function
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                         } else {
                             Text("No sets added yet.")
@@ -260,6 +269,13 @@ struct ActiveWorkoutView: View {
         }
     }
 
+    // Function to remove a set
+    private func removeSet(for exercise: ExerciseModel, at index: Int) {
+        guard var sets = exerciseSets[exercise.id] else { return }
+        sets.remove(at: index)
+        exerciseSets[exercise.id] = sets
+    }
+
     // Toggle timer start/stop
     private func toggleTimer() {
         isTimerRunning.toggle()
@@ -318,6 +334,7 @@ struct ActiveWorkoutView: View {
         )
     }
 }
+
 
 
 
