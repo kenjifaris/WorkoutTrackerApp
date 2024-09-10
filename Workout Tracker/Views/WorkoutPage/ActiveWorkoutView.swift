@@ -14,9 +14,9 @@ struct ActiveWorkoutView: View {
     @State private var isExercisesViewPresented = false
     @State private var selectedExercises: [ExerciseModel]
     @State private var isTimerRunning = true // Track timer state
-    @State private var showingActionSheetForExercise: ExerciseModel? = nil // Track which exercise is being managed
+    @State private var selectedExerciseForActionSheet: ExerciseModel? = nil // Track which exercise's ActionSheet is displayed
+    @State private var showingWorkoutOptions = false // Track whether to show workout options (for workout name ellipsis)
     @State private var selectedExerciseForDetail: ExerciseModel? = nil // For showing exercise details
-    @State private var showingWorkoutOptions = false // Track whether to show workout options
     @State private var isEditingWorkoutName = false // For workout name editing
     @State private var newWorkoutName: String = "" // Temporary storage for editing workout name
 
@@ -54,7 +54,7 @@ struct ActiveWorkoutView: View {
 
                         // Add ellipsis next to the workout name
                         Button(action: {
-                            showingWorkoutOptions = true
+                            showingWorkoutOptions = true // Show workout options
                         }) {
                             Image(systemName: "ellipsis")
                                 .padding()
@@ -94,12 +94,10 @@ struct ActiveWorkoutView: View {
                 VStack(spacing: 20) { // Add spacing between exercises for better separation
                     // Display selected exercises and sets
                     ForEach(selectedExercises) { exercise in
-                        // Use Card-style for each exercise
-                        VStack(alignment: .leading, spacing: 10) {
-                            // Exercise Name with ellipsis button
+                        VStack {
                             HStack {
                                 Button(action: {
-                                    selectedExerciseForDetail = exercise
+                                    selectedExerciseForDetail = exercise // Show exercise details
                                 }) {
                                     Text(exercise.name)
                                         .font(.headline)
@@ -110,14 +108,19 @@ struct ActiveWorkoutView: View {
 
                                 // Ellipsis button for each exercise
                                 Button(action: {
-                                    showingActionSheetForExercise = exercise
+                                    print("Ellipsis button tapped for \(exercise.name)")
+                                    selectedExerciseForActionSheet = exercise // Set the specific exercise for the ActionSheet
+                                    print("Selected exercise for action sheet: \(selectedExerciseForActionSheet?.name ?? "None")")
                                 }) {
                                     Image(systemName: "ellipsis")
                                         .padding()
                                         .background(Color.gray.opacity(0.2))
                                         .cornerRadius(5)
                                 }
-                                .contentShape(Rectangle())  // Make the whole area tappable
+                                .frame(width: 44, height: 44) // Ensure the button has enough tappable space
+                                .contentShape(Rectangle())  // Ensure the entire button area is tappable
+                                .buttonStyle(BorderlessButtonStyle()) // Prevent interference with surrounding gestures
+                                .zIndex(1) // Ensure the button is on the topmost layer
                             }
 
                             // Set Headers
@@ -256,8 +259,8 @@ struct ActiveWorkoutView: View {
         .sheet(item: $selectedExerciseForDetail) { exercise in
             ExerciseDetailView(exercise: exercise) // Show exercise details in a modal sheet
         }
-        // Action Sheet for Exercise Options
-        .actionSheet(item: $showingActionSheetForExercise) { exercise in
+        // Action Sheet for Exercise Options (for individual exercises)
+        .actionSheet(item: $selectedExerciseForActionSheet) { exercise in
             ActionSheet(
                 title: Text("\(exercise.name) Options"),
                 buttons: [
@@ -270,18 +273,6 @@ struct ActiveWorkoutView: View {
                     .default(Text("Replace Exercise")) {
                         // Replace exercise functionality
                     },
-                    .default(Text("Auto Rest Timer")) {
-                        // Auto rest timer toggle functionality
-                    },
-                    .default(Text("Weight Unit")) {
-                        // Switch weight unit (lbs/kgs)
-                    },
-                    .default(Text("Bar Type")) {
-                        // Set bar type
-                    },
-                    .default(Text("PR Metric")) {
-                        // Set PR metric (weight, time, etc.)
-                    },
                     .destructive(Text("Remove Exercise")) {
                         removeExercise(exercise) // Remove the exercise
                     },
@@ -289,7 +280,7 @@ struct ActiveWorkoutView: View {
                 ]
             )
         }
-        // Action Sheet for Workout Options
+        // Action Sheet for Workout Options (for workout name ellipsis)
         .actionSheet(isPresented: $showingWorkoutOptions) {
             ActionSheet(
                 title: Text("Workout Options"),
@@ -410,7 +401,6 @@ struct SwipeToDeleteView<Content: View>: View {
 
     var body: some View {
         ZStack {
-            // Foreground content (the set row)
             content
                 .offset(x: offset)
                 .gesture(
@@ -435,6 +425,18 @@ struct SwipeToDeleteView<Content: View>: View {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
