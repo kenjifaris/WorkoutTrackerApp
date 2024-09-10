@@ -13,6 +13,8 @@ struct ActiveWorkoutView: View {
     @State private var exerciseSets: [String: [ExerciseSet]] = [:] // Store sets for each exercise by exercise id
     @State private var isExercisesViewPresented = false
     @State private var selectedExercises: [ExerciseModel]
+    @State private var isTimerRunning = true // Track timer state
+    @State private var showingActionSheetForExercise: ExerciseModel? = nil // Track which exercise is being managed
 
     // Timer to keep track of workout duration
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -26,11 +28,11 @@ struct ActiveWorkoutView: View {
         VStack(spacing: 20) {
             // Timer and Title Row
             HStack {
-                // Timer button
+                // Timer button to start/stop
                 Button(action: {
-                    // Timer functionality if needed
+                    toggleTimer()
                 }) {
-                    Image(systemName: "timer")
+                    Image(systemName: isTimerRunning ? "pause.circle" : "play.circle")
                         .font(.title)
                         .padding()
                         .background(Color.gray.opacity(0.2))
@@ -39,7 +41,7 @@ struct ActiveWorkoutView: View {
 
                 Spacer()
 
-                // Workout name and timer
+                // Workout name and formatted timer
                 VStack(alignment: .leading) {
                     Text(workoutName)
                         .font(.title)
@@ -73,69 +75,67 @@ struct ActiveWorkoutView: View {
             // Display selected exercises and sets
             List {
                 ForEach(selectedExercises) { exercise in
-                    VStack(alignment: .leading, spacing: 10) {
-                        // Exercise name with a link to the detail view
-                        HStack {
-                            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                                Text(exercise.name)
-                                    .font(.headline)
-                                    .foregroundColor(.blue)
-                            }
+                    Section(header: HStack {
+                        Text(exercise.name)
+                            .font(.headline)
+                            .foregroundColor(.blue)
 
-                            Spacer()
+                        Spacer()
 
-                            // Link icon for additional info
-                            Button(action: {
-                                // Action for linking exercise info (e.g., show history)
-                            }) {
-                                Image(systemName: "link")
-                                    .foregroundColor(.blue)
-                            }
-
-                            // Three-dot button for more options
-                            Button(action: {
-                                // Action for more options
-                            }) {
-                                Image(systemName: "ellipsis")
-                                    .foregroundColor(.gray)
-                            }
+                        // Ellipsis Button for Additional Options
+                        Button(action: {
+                            showingActionSheetForExercise = exercise // Show action sheet for this exercise
+                        }) {
+                            Image(systemName: "ellipsis")
+                                .padding()
+                                .background(Color.gray.opacity(0.2)) // Add background box for better visibility
+                                .cornerRadius(5)
                         }
+                        .buttonStyle(BorderlessButtonStyle()) // Prevents row tap on button click
+                    }) {
+                        // Table Headers aligned correctly with text fields
+                        HStack {
+                            Text("Set")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                            Spacer()
+                            Text("Previous")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                            Spacer()
+                            Text("lbs")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .frame(width: 60) // Ensures alignment with the lbs text fields
+                            Text("Reps")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .frame(width: 60) // Ensures alignment with the Reps text fields
+                        }
+                        .padding(.horizontal)
 
-                        // Set rows for each exercise
+                        // Display all sets for each exercise
                         if let sets = exerciseSets[exercise.id], !sets.isEmpty {
                             ForEach(sets.indices, id: \.self) { index in
                                 HStack {
                                     Text("Set \(sets[index].setNumber)")
                                         .font(.subheadline)
-
                                     Spacer()
-
-                                    // Display "Previous" values (placeholder for now)
-                                    Text("-")
+                                    Text("-") // Placeholder for "Previous"
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
-
-                                    // TextField for lbs (weight) with binding
-                                    if let weightBinding = bindingForSetWeight(exerciseID: exercise.id, index: index) {
-                                        TextField("lbs", text: weightBinding)
-                                            .frame(width: 60)
-                                            .keyboardType(.decimalPad)
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    }
-
-                                    // TextField for reps with binding
-                                    if let repsBinding = bindingForSetReps(exerciseID: exercise.id, index: index) {
-                                        TextField("Reps", text: repsBinding)
-                                            .frame(width: 60)
-                                            .keyboardType(.numberPad)
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    }
-
                                     Spacer()
-
-                                    // Checkmark button
+                                    TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                        .frame(width: 60)
+                                        .keyboardType(.decimalPad)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                        .frame(width: 60)
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    Spacer()
                                     Button(action: {
-                                        // Confirm set action (e.g., mark as completed)
+                                        // Action for marking set as completed
                                     }) {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.green)
@@ -157,12 +157,17 @@ struct ActiveWorkoutView: View {
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.gray.opacity(0.1))
+                                .background(Color.blue.opacity(0.1))
                                 .foregroundColor(.blue)
                                 .cornerRadius(10)
                         }
                     }
-                    .padding(.vertical, 5)
+                    .onAppear {
+                        // Ensure there's a default first set when an exercise is added
+                        if exerciseSets[exercise.id]?.isEmpty ?? true {
+                            addNewSet(for: exercise)
+                        }
+                    }
                 }
             }
             .listStyle(PlainListStyle())
@@ -181,7 +186,6 @@ struct ActiveWorkoutView: View {
             }
             .padding(.horizontal)
             .sheet(isPresented: $isExercisesViewPresented) {
-                // Present ExercisesSelectionView and pass back selected exercises
                 ExercisesSelectionView(selectedExercises: $selectedExercises)
             }
 
@@ -205,8 +209,48 @@ struct ActiveWorkoutView: View {
         .navigationTitle("")
         .navigationBarHidden(true)
         .onReceive(timer) { _ in
-            workoutDuration += 1
+            if isTimerRunning {
+                workoutDuration += 1
+            }
         }
+        // Action Sheet for Exercise Options
+        .actionSheet(item: $showingActionSheetForExercise) { exercise in
+            ActionSheet(
+                title: Text("\(exercise.name) Options"),
+                buttons: [
+                    .default(Text("Add a Note")) {
+                        // Add a note functionality
+                    },
+                    .default(Text("Add Warm-up Sets")) {
+                        // Add warm-up sets functionality
+                    },
+                    .default(Text("Replace Exercise")) {
+                        // Replace exercise functionality
+                    },
+                    .default(Text("Auto Rest Timer")) {
+                        // Auto rest timer toggle functionality
+                    },
+                    .default(Text("Weight Unit: lbs")) {
+                        // Change weight unit functionality
+                    },
+                    .default(Text("Bar Type: None")) {
+                        // Bar type setting
+                    },
+                    .default(Text("PR Metric: Weight")) {
+                        // PR Metric selection
+                    },
+                    .destructive(Text("Remove Exercise")) {
+                        removeExercise(exercise) // Remove the exercise
+                    },
+                    .cancel()
+                ]
+            )
+        }
+    }
+
+    // Toggle timer start/stop
+    private func toggleTimer() {
+        isTimerRunning.toggle()
     }
 
     // Add a new set for a specific exercise
@@ -220,6 +264,12 @@ struct ActiveWorkoutView: View {
         } else {
             exerciseSets[exercise.id] = [newSet]
         }
+    }
+
+    // Remove exercise from the list
+    private func removeExercise(_ exercise: ExerciseModel) {
+        selectedExercises.removeAll { $0.id == exercise.id }
+        exerciseSets[exercise.id] = nil
     }
 
     // Format Time Interval into H:MM:SS format
@@ -257,15 +307,9 @@ struct ActiveWorkoutView: View {
     }
 }
 
-// Preview provider
-struct ActiveWorkoutView_Previews: PreviewProvider {
-    static var previews: some View {
-        ActiveWorkoutView(selectedExercises: [
-            ExerciseModel(id: "0001", name: "Bench Press (Smith Machine)", target: "Chest", bodyPart: "Chest", equipment: "Smith Machine", category: "Strength", gifFileName: "0001.gif", secondaryMuscles: ["Triceps"], instructions: ["Lift the weight."]),
-            ExerciseModel(id: "0002", name: "Bench Press (Dumbbell)", target: "Chest", bodyPart: "Chest", equipment: "Dumbbell", category: "Strength", gifFileName: "0002.gif", secondaryMuscles: ["Triceps"], instructions: ["Lift the dumbbells."])
-        ])
-    }
-}
+
+
+
 
 
 
