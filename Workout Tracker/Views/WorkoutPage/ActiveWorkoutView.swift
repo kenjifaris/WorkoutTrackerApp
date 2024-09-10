@@ -15,6 +15,7 @@ struct ActiveWorkoutView: View {
     @State private var selectedExercises: [ExerciseModel]
     @State private var isTimerRunning = true // Track timer state
     @State private var showingActionSheetForExercise: ExerciseModel? = nil // Track which exercise is being managed
+    @State private var selectedExerciseForDetail: ExerciseModel? = nil // For showing exercise details
 
     // Timer to keep track of workout duration
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -76,9 +77,14 @@ struct ActiveWorkoutView: View {
             List {
                 ForEach(selectedExercises) { exercise in
                     Section(header: HStack {
-                        Text(exercise.name)
-                            .font(.headline)
-                            .foregroundColor(.blue)
+                        // Exercise name as a tappable Button to show the sheet
+                        Button(action: {
+                            selectedExerciseForDetail = exercise // Show exercise details in a sheet
+                        }) {
+                            Text(exercise.name)
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                        }
 
                         Spacer()
 
@@ -216,6 +222,9 @@ struct ActiveWorkoutView: View {
                 workoutDuration += 1
             }
         }
+        .sheet(item: $selectedExerciseForDetail) { exercise in
+            ExerciseDetailView(exercise: exercise) // Show exercise details in a modal sheet
+        }
         // Action Sheet for Exercise Options
         .actionSheet(item: $showingActionSheetForExercise) { exercise in
             ActionSheet(
@@ -309,6 +318,11 @@ struct ActiveWorkoutView: View {
         )
     }
 }
+
+
+
+
+
 
 
 
