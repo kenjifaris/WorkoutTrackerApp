@@ -16,6 +16,9 @@ struct ActiveWorkoutView: View {
     @State private var isTimerRunning = true // Track timer state
     @State private var showingActionSheetForExercise: ExerciseModel? = nil // Track which exercise is being managed
     @State private var selectedExerciseForDetail: ExerciseModel? = nil // For showing exercise details
+    @State private var showingWorkoutOptions = false // Track whether to show workout options
+    @State private var isEditingWorkoutName = false // For workout name editing
+    @State private var newWorkoutName: String = "" // Temporary storage for editing workout name
 
     // Timer to keep track of workout duration
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -44,9 +47,22 @@ struct ActiveWorkoutView: View {
 
                 // Workout name and formatted timer
                 VStack(alignment: .leading) {
-                    Text(workoutName)
-                        .font(.title)
-                        .fontWeight(.bold)
+                    HStack {
+                        Text(workoutName)
+                            .font(.title)
+                            .fontWeight(.bold)
+
+                        // Add ellipsis next to the workout name
+                        Button(action: {
+                            showingWorkoutOptions = true
+                        }) {
+                            Image(systemName: "ellipsis")
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(5)
+                        }
+                        .contentShape(Rectangle())  // Make the entire area tappable
+                    }
 
                     Text("\(formatTime(workoutDuration))")
                         .font(.subheadline)
@@ -75,98 +91,98 @@ struct ActiveWorkoutView: View {
 
             // ScrollView to wrap the List and the buttons
             ScrollView {
-                VStack {
+                VStack(spacing: 20) { // Add spacing between exercises for better separation
                     // Display selected exercises and sets
                     ForEach(selectedExercises) { exercise in
-                        Section(header: HStack {
-                            // Exercise name as a tappable Button to show the sheet
-                            Button(action: {
-                                selectedExerciseForDetail = exercise // Show exercise details in a sheet
-                            }) {
-                                Text(exercise.name)
-                                    .font(.headline)
-                                    .foregroundColor(.blue)
+                        // Use Card-style for each exercise
+                        VStack(alignment: .leading, spacing: 10) {
+                            // Exercise Name with ellipsis button
+                            HStack {
+                                Button(action: {
+                                    selectedExerciseForDetail = exercise
+                                }) {
+                                    Text(exercise.name)
+                                        .font(.headline)
+                                        .foregroundColor(.blue)
+                                }
+
+                                Spacer()
+
+                                // Ellipsis button for each exercise
+                                Button(action: {
+                                    showingActionSheetForExercise = exercise
+                                }) {
+                                    Image(systemName: "ellipsis")
+                                        .padding()
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(5)
+                                }
+                                .contentShape(Rectangle())  // Make the whole area tappable
                             }
 
-                            Spacer()
-
-                            // Ellipsis Button for Additional Options
-                            Button(action: {
-                                showingActionSheetForExercise = exercise // Show action sheet for this exercise
-                            }) {
-                                Image(systemName: "ellipsis")
-                                    .padding()
-                                    .background(Color.gray.opacity(0.2)) // Add background box for better visibility
-                                    .cornerRadius(5)
-                            }
-                            .buttonStyle(BorderlessButtonStyle()) // Prevents row tap on button click
-                        }) {
-                            // Table Headers aligned correctly with text fields using LazyVGrid
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()), // Set
-                                GridItem(.flexible()), // Previous
-                                GridItem(.fixed(60)), // lbs (fixed width for consistency)
-                                GridItem(.fixed(60))  // Reps (fixed width for consistency)
-                            ], spacing: 10) {
+                            // Set Headers
+                            HStack {
                                 Text("Set")
                                     .font(.caption)
                                     .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Text("Previous")
                                     .font(.caption)
                                     .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
 
                                 Text("lbs")
                                     .font(.caption)
                                     .fontWeight(.bold)
+                                    .frame(width: 60)
 
                                 Text("Reps")
                                     .font(.caption)
                                     .fontWeight(.bold)
+                                    .frame(width: 60)
                             }
                             .padding(.horizontal)
 
-                            // Display all sets for each exercise
-                            if let sets = exerciseSets[exercise.id], !sets.isEmpty {
-                                ForEach(sets.indices, id: \.self) { index in
-                                    HStack {
-                                        LazyVGrid(columns: [
-                                            GridItem(.flexible()), // Set
-                                            GridItem(.flexible()), // Previous
-                                            GridItem(.fixed(60)), // lbs (fixed width for consistency)
-                                            GridItem(.fixed(60))  // Reps (fixed width for consistency)
-                                        ], spacing: 10) {
-                                            Text("Set \(sets[index].setNumber)")
-                                                .font(.subheadline)
+                            // List of sets with swipe-to-delete
+                            VStack(spacing: 8) {
+                                if let sets = exerciseSets[exercise.id], !sets.isEmpty {
+                                    ForEach(sets.indices, id: \.self) { index in
+                                        SwipeToDeleteView(
+                                            onDelete: { removeSet(for: exercise, at: index) }
+                                        ) {
+                                            // Content of each set
+                                            HStack {
+                                                Text("Set \(sets[index].setNumber)")
+                                                    .font(.subheadline)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                                            Text("-") // Placeholder for "Previous"
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
+                                                Text("-")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                                            TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                                .frame(width: 60) // Ensuring fixed width to match header
-                                                .keyboardType(.decimalPad)
-                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                                TextField("lbs", text: bindingForSetWeight(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                                    .frame(width: 60)
+                                                    .keyboardType(.decimalPad)
+                                                    .textFieldStyle(RoundedBorderTextFieldStyle())
 
-                                            TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
-                                                .frame(width: 60) // Ensuring fixed width to match header
-                                                .keyboardType(.numberPad)
-                                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        }
-                                        .padding(.vertical, 4)
-                                    }
-                                    .swipeActions { // Enable swipe-to-delete
-                                        Button(role: .destructive) {
-                                            removeSet(for: exercise, at: index) // Call the remove function
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
+                                                TextField("Reps", text: bindingForSetReps(exerciseID: exercise.id, index: index) ?? .constant(""))
+                                                    .frame(width: 60)
+                                                    .keyboardType(.numberPad)
+                                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                            }
+                                            .padding(.vertical, 4)
+                                            .background(Color.white)
+                                            .cornerRadius(8)
+                                            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2) // Shadow for each set
                                         }
                                     }
+                                } else {
+                                    Text("No sets added yet.")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
                                 }
-                            } else {
-                                Text("No sets added yet.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
                             }
 
                             // Add Set Button
@@ -182,17 +198,20 @@ struct ActiveWorkoutView: View {
                                     .cornerRadius(10)
                             }
                         }
+                        .padding()
+                        .background(Color.white) // Card background
+                        .cornerRadius(15)
+                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5) // Card shadow
                         .onAppear {
-                            // Ensure there's a default first set when an exercise is added
+                            // Automatically add the first set when exercise is added
                             if exerciseSets[exercise.id]?.isEmpty ?? true {
                                 addNewSet(for: exercise)
                             }
                         }
                     }
 
-                    // Add the Buttons at the Bottom
-                    HStack {
-                        // Add Exercises Button
+                    // Buttons at the Bottom
+                    HStack(spacing: 16) {
                         Button(action: {
                             isExercisesViewPresented = true
                         }) {
@@ -200,12 +219,11 @@ struct ActiveWorkoutView: View {
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
 
-                        // Cancel Workout Button
                         Button(action: {
                             // Cancel workout functionality
                         }) {
@@ -213,13 +231,12 @@ struct ActiveWorkoutView: View {
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.red.opacity(0.1))
-                                .foregroundColor(.red)
+                                .background(Color.red)
+                                .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 20) // Adding space between buttons and exercises
                 }
                 .padding(.bottom, 20) // Add some bottom padding to ensure buttons aren’t cut off
             }
@@ -256,14 +273,14 @@ struct ActiveWorkoutView: View {
                     .default(Text("Auto Rest Timer")) {
                         // Auto rest timer toggle functionality
                     },
-                    .default(Text("Weight Unit: lbs")) {
-                        // Change weight unit functionality
+                    .default(Text("Weight Unit")) {
+                        // Switch weight unit (lbs/kgs)
                     },
-                    .default(Text("Bar Type: None")) {
-                        // Bar type setting
+                    .default(Text("Bar Type")) {
+                        // Set bar type
                     },
-                    .default(Text("PR Metric: Weight")) {
-                        // PR Metric selection
+                    .default(Text("PR Metric")) {
+                        // Set PR metric (weight, time, etc.)
                     },
                     .destructive(Text("Remove Exercise")) {
                         removeExercise(exercise) // Remove the exercise
@@ -272,12 +289,46 @@ struct ActiveWorkoutView: View {
                 ]
             )
         }
+        // Action Sheet for Workout Options
+        .actionSheet(isPresented: $showingWorkoutOptions) {
+            ActionSheet(
+                title: Text("Workout Options"),
+                buttons: [
+                    .default(Text("Edit Workout Name")) {
+                        // Trigger edit workout name alert
+                        newWorkoutName = workoutName
+                        isEditingWorkoutName = true
+                    },
+                    .default(Text("Adjust Start/End Time")) {
+                        // Logic to adjust start/end time
+                    },
+                    .default(Text("Add Photo")) {
+                        // Logic to add photo
+                    },
+                    .cancel()
+                ]
+            )
+        }
+        // Edit Workout Name Alert
+        .alert("Edit Workout Name", isPresented: $isEditingWorkoutName) {
+            TextField("Workout Name", text: $newWorkoutName)
+            Button("Save", action: {
+                workoutName = newWorkoutName
+            })
+            Button("Cancel", role: .cancel, action: {})
+        }
     }
 
-    // Function to remove a set
+    // Function to remove a set and re-index remaining sets
     private func removeSet(for exercise: ExerciseModel, at index: Int) {
         guard var sets = exerciseSets[exercise.id] else { return }
         sets.remove(at: index)
+        
+        // Re-index the sets after deletion
+        for i in 0..<sets.count {
+            sets[i].setNumber = i + 1
+        }
+        
         exerciseSets[exercise.id] = sets
     }
 
@@ -289,7 +340,13 @@ struct ActiveWorkoutView: View {
     // Add a new set for a specific exercise
     private func addNewSet(for exercise: ExerciseModel) {
         let newSetNumber = (exerciseSets[exercise.id]?.count ?? 0) + 1
-        let newSet = ExerciseSet(setNumber: newSetNumber)
+
+        // Get previous set's values (lbs and reps) to auto-fill the new set
+        let previousSet = exerciseSets[exercise.id]?.last
+        var newSet = ExerciseSet(setNumber: newSetNumber)
+
+        newSet.weightString = previousSet?.weightString ?? "" // Auto-fill weight
+        newSet.repsString = previousSet?.repsString ?? ""     // Auto-fill reps
 
         // Append the new set to the list of sets for this exercise
         if exerciseSets[exercise.id] != nil {
@@ -339,6 +396,49 @@ struct ActiveWorkoutView: View {
         )
     }
 }
+
+struct SwipeToDeleteView<Content: View>: View {
+    let onDelete: () -> Void
+    let content: Content
+
+    @State private var offset: CGFloat = 0
+
+    init(onDelete: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+        self.onDelete = onDelete
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            // Foreground content (the set row)
+            content
+                .offset(x: offset)
+                .gesture(
+                    DragGesture()
+                        .onChanged { gesture in
+                            if gesture.translation.width < 0 { // Only allow left swipe
+                                offset = gesture.translation.width
+                            }
+                        }
+                        .onEnded { gesture in
+                            if gesture.translation.width < -100 { // If swiped far enough, delete
+                                withAnimation(.easeInOut) {
+                                    onDelete()
+                                }
+                            } else { // Reset if not swiped far enough
+                                withAnimation(.spring()) {
+                                    offset = 0
+                                }
+                            }
+                        }
+                )
+        }
+    }
+}
+
+
+
+
 
 
 
