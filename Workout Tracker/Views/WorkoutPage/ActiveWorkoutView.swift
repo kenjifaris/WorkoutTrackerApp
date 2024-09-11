@@ -1,11 +1,8 @@
-//
 //  ActiveWorkoutView.swift
 //  Workout Tracker
-//
-//  Created by Kenji on 8/19/24.
-//
 
 import SwiftUI
+import FirebaseAuth  // To get user ID
 
 struct ActiveWorkoutView: View {
     @State private var workoutName: String = "Midday Workout"
@@ -21,6 +18,7 @@ struct ActiveWorkoutView: View {
     @State private var newWorkoutName: String = "" // Temporary storage for editing workout name
     @State private var showingProgressChart = false // State to show progress chart
     @State private var progressData: [ExerciseSet] = [] // Store the progress data for charts
+    @State private var isSavingWorkout = false // State to track workout saving process
 
     // Timer to keep track of workout duration
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -32,7 +30,6 @@ struct ActiveWorkoutView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            // Timer and Title Row Component
             TimerAndTitleRow(
                 isTimerRunning: $isTimerRunning,
                 workoutName: $workoutName,
@@ -44,7 +41,6 @@ struct ActiveWorkoutView: View {
                 finishWorkout: finishWorkout
             )
 
-            // Scrollable list of exercises and buttons
             ScrollView {
                 ExercisesListView(
                     selectedExercises: $selectedExercises,
@@ -59,7 +55,6 @@ struct ActiveWorkoutView: View {
                     removeExercise: removeExercise
                 )
 
-                // Bottom Buttons: Add Exercises and Cancel Workout
                 HStack(spacing: 16) {
                     Button(action: {
                         isExercisesViewPresented = true
@@ -87,9 +82,8 @@ struct ActiveWorkoutView: View {
                 }
                 .padding(.horizontal)
             }
-            .padding(.bottom, 20) // Ensures buttons are not cut off
+            .padding(.bottom, 20)
 
-            // Sheet for selecting exercises
             .sheet(isPresented: $isExercisesViewPresented) {
                 ExercisesSelectionView(selectedExercises: $selectedExercises)
             }
@@ -104,32 +98,30 @@ struct ActiveWorkoutView: View {
                 workoutDuration += 1
             }
         }
-        // Show exercise details when an exercise is selected
+        .alert(isPresented: $isSavingWorkout) {
+            Alert(
+                title: Text("Saving Workout"),
+                message: Text("Your workout has been saved successfully."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
         .sheet(item: $selectedExerciseForDetail) { exercise in
             ExerciseDetailView(exercise: exercise, progressData: progressData)
         }
-        // Action sheet for options for individual exercises
         .actionSheet(item: $selectedExerciseForActionSheet) { exercise in
             ActionSheet(
                 title: Text("\(exercise.name) Options"),
                 buttons: [
-                    .default(Text("Add a Note")) {
-                        // Add a note functionality
-                    },
-                    .default(Text("Add Warm-up Sets")) {
-                        // Add warm-up sets functionality
-                    },
-                    .default(Text("Replace Exercise")) {
-                        // Replace exercise functionality
-                    },
+                    .default(Text("Add a Note")),
+                    .default(Text("Add Warm-up Sets")),
+                    .default(Text("Replace Exercise")),
                     .destructive(Text("Remove Exercise")) {
-                        removeExercise(exercise) // Remove the exercise
+                        removeExercise(exercise)
                     },
                     .cancel()
                 ]
             )
         }
-        // Action sheet for workout options
         .actionSheet(isPresented: $showingWorkoutOptions) {
             ActionSheet(
                 title: Text("Workout Options"),
@@ -138,22 +130,17 @@ struct ActiveWorkoutView: View {
                         newWorkoutName = workoutName
                         isEditingWorkoutName = true
                     },
-                    .default(Text("Adjust Start/End Time")) {
-                        // Logic to adjust start/end time
-                    },
-                    .default(Text("Add Photo")) {
-                        // Logic to add photo
-                    },
+                    .default(Text("Adjust Start/End Time")),
+                    .default(Text("Add Photo")),
                     .cancel()
                 ]
             )
         }
-        // Alert for editing workout name
         .alert("Edit Workout Name", isPresented: $isEditingWorkoutName) {
             TextField("Workout Name", text: $newWorkoutName)
-            Button("Save", action: {
+            Button("Save") {
                 workoutName = newWorkoutName
-            })
+            }
             Button("Cancel", role: .cancel, action: {})
         }
     }
@@ -187,7 +174,6 @@ struct ActiveWorkoutView: View {
         newSet.weightString = previousSet?.weightString ?? "" // Auto-fill weight
         newSet.repsString = previousSet?.repsString ?? ""     // Auto-fill reps
 
-        // Append the new set to the list of sets for this exercise
         if exerciseSets[exercise.id] != nil {
             exerciseSets[exercise.id]?.append(newSet)
         } else {
@@ -201,9 +187,25 @@ struct ActiveWorkoutView: View {
         exerciseSets[exercise.id] = nil
     }
 
-    // Finish workout action
+    // Finish workout action and save it to Firestore
     private func finishWorkout() {
-        // Logic for finishing workout
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        // Create a new workout with a unique ID
+        let workout = Workout(
+            id: UUID().uuidString, // Unique identifier for the workout
+            workoutName: workoutName,
+            workoutDuration: workoutDuration,
+            exerciseSets: exerciseSets // Pass the dictionary of exerciseSets
+        )
+
+        FirestoreService.shared.saveWorkout(workout, for: userId) { error in
+            if let error = error {
+                print("Error saving workout: \(error.localizedDescription)")
+            } else {
+                isSavingWorkout = true // Show alert after saving
+            }
+        }
     }
 
     // Fetch progress data for a specific exercise
@@ -217,5 +219,3 @@ struct ActiveWorkoutView: View {
         completion(exampleData) // Replace with actual data loaded from Firestore
     }
 }
-
-

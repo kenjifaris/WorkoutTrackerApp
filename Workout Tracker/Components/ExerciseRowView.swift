@@ -2,7 +2,7 @@
 //  ExerciseRowView.swift
 //  Workout Tracker
 //
-//  Created by Kenji  on 8/19/24.
+//  Created by Kenji on 8/19/24.
 //
 
 import SwiftUI
@@ -71,7 +71,7 @@ struct ExerciseRowView_Previews: PreviewProvider {
             name: "Push Up",
             target: "Chest",
             bodyPart: "Upper Arms", // Will be mapped to "Arms"
-            equipment: "Body weight",
+            equipment: "Body Weight",
             category: "Strength",
             gifFileName: "0001.gif",
             secondaryMuscles: ["Triceps", "Shoulders"],
@@ -84,28 +84,4 @@ struct ExerciseRowView_Previews: PreviewProvider {
         ))
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

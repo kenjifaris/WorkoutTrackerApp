@@ -2,7 +2,7 @@
 //  FirestoreService.swift
 //  Workout Tracker
 //
-//  Created by Kenji  on 8/27/24.
+//  Created by Kenji on 8/27/24.
 //
 
 import Foundation
@@ -12,7 +12,7 @@ class FirestoreService {
     static let shared = FirestoreService()
     
     private init() {}
-    
+
     // Helper function to capitalize the first letter of each word in a string
     private func capitalizeWords(in text: String) -> String {
         return text.capitalized
@@ -22,8 +22,8 @@ class FirestoreService {
     private func capitalizeWords(in array: [String]) -> [String] {
         return array.map { $0.capitalized }
     }
-    
-    // Method to update and capitalize exercise fields specifically in 'saved_exercises/exercisesview_list'
+
+    // Method to update and capitalize exercise fields in 'saved_exercises/exercisesview_list'
     func updateAndCapitalizeExerciseFields() {
         let db = Firestore.firestore()
         let documentRef = db.collection("saved_exercises").document("exercisesview_list")
@@ -94,6 +94,45 @@ class FirestoreService {
             }
         }
     }
+
+    // MARK: Storing User Workouts
+    // Save workout function inside FirestoreService
+    func saveWorkout(_ workout: Workout, for userID: String, completion: @escaping (Error?) -> Void) {
+        let db = Firestore.firestore()
+        let workoutRef = db.collection("users").document(userID).collection("workouts").document(workout.id)
+
+        // Convert Workout model to dictionary
+        let workoutData = workout.toDictionary()
+
+        workoutRef.setData(workoutData) { error in
+            completion(error)
+        }
+    }
+
+    // MARK: Fetching User Workouts
+    func fetchUserWorkouts(for userID: String, completion: @escaping (Result<[Workout], Error>) -> Void) {
+        let db = Firestore.firestore()
+        let userWorkoutRef = db.collection("users").document(userID).collection("workouts")
+        
+        userWorkoutRef.getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error fetching workouts: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let documents = snapshot?.documents else {
+                completion(.success([]))
+                return
+            }
+            
+            let workouts: [Workout] = documents.compactMap { doc in
+                return Workout(dictionary: doc.data()) // Initialize Workout from dictionary
+            }
+            
+            completion(.success(workouts))
+        }
+    }
 }
 
 // Helper to convert the ExerciseModel to dictionary
@@ -112,20 +151,3 @@ extension ExerciseModel {
         ]
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

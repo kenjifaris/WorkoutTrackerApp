@@ -5,74 +5,75 @@
 //  Created by Kenji  on 8/19/24.
 //
 
+// HistoryView.swift
+
 import SwiftUI
+import FirebaseAuth // Make sure FirebaseAuth is imported for userId retrieval
 
 struct HistoryView: View {
-    @State private var isCalendarPresented = false
-    @State private var isWorkoutViewPresented = false
+    @State private var userWorkouts: [Workout] = []
+    @State private var isLoading = true
 
     var body: some View {
         NavigationView {
             VStack {
-                // Placeholder for no workouts
-                Spacer()
-                
-                Image(systemName: "bird.fill")
-                    .font(.system(size: 50))
-                    .foregroundColor(.yellow)
-                
-                Text("No Workouts Performed")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top, 10)
-                
-                Text("Completed workouts will appear here.")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .padding(.bottom, 20)
-                
-                // Start Workout Button
-                Button(action: {
-                    isWorkoutViewPresented = true
-                }) {
-                    Text("+ Start Workout")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                if isLoading {
+                    ProgressView("Loading Workouts...")
+                } else if userWorkouts.isEmpty {
+                    Text("No workout history available. Start tracking your workouts!")
+                        .foregroundColor(.gray)
                         .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .cornerRadius(10)
+                } else {
+                    List(userWorkouts) { workout in
+                        // Display each workout (you can customize this list item as you like)
+                        VStack(alignment: .leading) {
+                            Text(workout.workoutName)
+                                .font(.headline)
+                            Text("Duration: \(formatTimeInterval(workout.workoutDuration))")
+                                .font(.subheadline)
+                            Text("Exercise Count: \(workout.exerciseSets.count)")
+                                .font(.subheadline)
+                        }
+                        .padding()
+                    }
                 }
-                .padding(.horizontal)
-                .sheet(isPresented: $isWorkoutViewPresented) {
-                    WorkoutView()
-                }
-                
-                Spacer()
             }
-            .navigationTitle("History")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        isCalendarPresented = true
-                    }) {
-                        Text("Calendar")
-                            .foregroundColor(.blue)
-                    }
-                    .sheet(isPresented: $isCalendarPresented) {
-                        CalendarView() // We'll define CalendarView later
-                    }
-                }
+            .navigationTitle("Workout History")
+            .onAppear {
+                fetchWorkouts()
             }
         }
     }
-}
-
-struct HistoryView_Previews: PreviewProvider {
-    static var previews: some View {
-        HistoryView()
+    
+    // MARK: - Fetch Workouts
+    private func fetchWorkouts() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("No user is logged in")
+            return
+        }
+        
+        FirestoreService.shared.fetchUserWorkouts(for: userId) { result in
+            switch result {
+            case .success(let workouts):
+                self.userWorkouts = workouts
+                self.isLoading = false
+            case .failure(let error):
+                print("Failed to fetch workouts: \(error.localizedDescription)")
+                self.isLoading = false
+            }
+        }
+    }
+    
+    // MARK: - Helper to format time
+    private func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        let seconds = Int(interval) % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }
+
+
 
 
 
