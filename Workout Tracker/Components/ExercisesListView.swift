@@ -149,8 +149,8 @@ struct ExercisesListView: View {
                             .padding(.top, 8)
                     }
                     .sheet(isPresented: $showingProgressChart) {
-                        // Ensure the parameters match ExerciseProgressChartView's initializer
-                        ExerciseProgressChartView(exercise: exercise, progressData: progressData)
+                        // Pass only progressData to ExerciseProgressChartView
+                        ExerciseProgressChartView(progressData: progressData)
                     }
                 }
                 .padding()
@@ -166,3 +166,4 @@ struct ExercisesListView: View {
         }
     }
 }
+

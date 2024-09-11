@@ -99,8 +99,8 @@ struct ExerciseDetailView: View {
                             .foregroundColor(.gray)
                             .padding()
                     } else {
-                        // Ensure both `exercise` and `progressData` are passed
-                        ExerciseProgressChartView(exercise: exercise, progressData: progressData)
+                        // Now only pass progressData to ExerciseProgressChartView
+                        ExerciseProgressChartView(progressData: progressData)
                     }
                 }
                 .tabItem {
@@ -153,3 +153,4 @@ struct ExerciseDetailView_Previews: PreviewProvider {
         )
     }
 }
+
