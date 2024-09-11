@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ExerciseSet: Identifiable {
+struct ExerciseSet: Identifiable, Codable {  // Add Codable conformance here
     var id = UUID()
     var setNumber: Int
     var weight: Double?
@@ -26,5 +26,6 @@ struct ExerciseSet: Identifiable {
         self.repsString = reps != nil ? "\(reps!)" : ""
     }
 }
+
 
 

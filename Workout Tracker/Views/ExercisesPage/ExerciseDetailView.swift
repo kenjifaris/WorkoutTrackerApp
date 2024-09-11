@@ -6,62 +6,61 @@
 //
 
 import SwiftUI
+import Charts
 import SDWebImageSwiftUI
 
 struct ExerciseDetailView: View {
     var exercise: ExerciseModel
-    
+    var progressData: [ExerciseSet] // ExerciseSet data for the charts
+
     var body: some View {
         VStack {
-            // TabView to switch between About, History, Charts, PRs
+            // TabView for switching between different sections (About, Charts, etc.)
             TabView {
-                // About tab (GIF + exercise details + instructions)
+                
+                // About Tab (GIF + exercise details)
                 ScrollView {
                     VStack(alignment: .leading) {
-                        // Display the GIF with a fixed size
+                        // Display the GIF (if available)
                         if let gifFileName = exercise.gifFileName,
                            let gifPath = Bundle.main.path(forResource: gifFileName, ofType: nil, inDirectory: "360") {
                             WebImage(url: URL(fileURLWithPath: gifPath))
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(height: 250) // Fixed height for the GIF
+                                .frame(height: 250)
                                 .padding()
                         } else {
-                            // Fallback in case GIF is not found
+                            // Fallback if GIF is not found
                             Image(systemName: "photo")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(height: 250) // Fixed height for placeholder
+                                .frame(height: 250)
                                 .padding()
                                 .foregroundColor(.gray)
                         }
 
-                        // Exercise Name as a Title
+                        // Exercise Name as Title
                         Text(exercise.name)
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.top, 10)
 
-                        // Body Part and Equipment in a horizontal layout
+                        // Body Part and Equipment info
                         HStack {
-                            Text("Body Part:")
-                                .fontWeight(.bold)
+                            Text("Body Part:").fontWeight(.bold)
                             Text(exercise.bodyPart)
                             Spacer()
-                            Text("Equipment:")
-                                .fontWeight(.bold)
+                            Text("Equipment:").fontWeight(.bold)
                             Text(exercise.equipment)
                         }
                         .padding(.vertical, 2)
 
-                        // Target and Secondary Muscles in a horizontal layout
+                        // Target and Secondary Muscles
                         HStack(alignment: .top) {
-                            Text("Target:")
-                                .fontWeight(.bold)
+                            Text("Target:").fontWeight(.bold)
                             Text(exercise.target)
                             Spacer()
-                            Text("Secondary Muscles:")
-                                .fontWeight(.bold)
+                            Text("Secondary Muscles:").fontWeight(.bold)
                             VStack(alignment: .leading) {
                                 ForEach(exercise.secondaryMuscles ?? [], id: \.self) { muscle in
                                     Text(muscle)
@@ -70,35 +69,45 @@ struct ExerciseDetailView: View {
                         }
                         .padding(.vertical, 2)
 
-                        Divider() // Divider to separate metadata and instructions
+                        Divider()
 
-                        // Instructions section
-                        Text("Instructions")
-                            .font(.headline)
-                            .padding(.top, 10)
-
-                        // Numbered instructions with alignment
+                        // Instructions Section
+                        Text("Instructions").font(.headline).padding(.top, 10)
                         ForEach(exercise.instructions?.indices ?? 0..<0, id: \.self) { index in
                             HStack(alignment: .top) {
-                                Text("\(index + 1).")
-                                    .fontWeight(.bold)
-                                    .frame(width: 20, alignment: .leading)
-                                    .alignmentGuide(.top) { _ in 0 }
-
-                                Text(exercise.instructions?[index] ?? "")
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .alignmentGuide(.top) { _ in 0 }
+                                Text("\(index + 1).").fontWeight(.bold).frame(width: 20, alignment: .leading)
+                                Text(exercise.instructions?[index] ?? "").fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(.vertical, 4)
                         }
                     }
-                    .padding(.horizontal, 16) // Padding around the entire content
+                    .padding(.horizontal, 16) // Padding around the content
                 }
                 .tabItem {
                     Label("About", systemImage: "info.circle")
                 }
 
-                // History tab
+                // Progress Charts Tab
+                VStack {
+                    Text("Exercise Progress")
+                        .font(.headline)
+                        .padding(.top)
+
+                    // Display the progress chart
+                    if progressData.isEmpty {
+                        Text("No progress data available. Start tracking your sets!")
+                            .foregroundColor(.gray)
+                            .padding()
+                    } else {
+                        // Ensure both `exercise` and `progressData` are passed
+                        ExerciseProgressChartView(exercise: exercise, progressData: progressData)
+                    }
+                }
+                .tabItem {
+                    Label("Charts", systemImage: "chart.bar")
+                }
+
+                // Placeholder for other sections
                 VStack {
                     Text("History Content")
                         .font(.headline)
@@ -107,16 +116,6 @@ struct ExerciseDetailView: View {
                     Label("History", systemImage: "clock.arrow.circlepath")
                 }
 
-                // Charts tab
-                VStack {
-                    Text("Charts Content")
-                        .font(.headline)
-                }
-                .tabItem {
-                    Label("Charts", systemImage: "chart.bar")
-                }
-
-                // PRs tab (Personal Records)
                 VStack {
                     Text("PRs Content")
                         .font(.headline)
@@ -125,25 +124,32 @@ struct ExerciseDetailView: View {
                     Label("PRs", systemImage: "rosette")
                 }
             }
-            .padding(.bottom, 20) // Avoid cutting off tab content
+            .padding(.bottom, 20) // Padding to avoid cutting off tab content
         }
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+struct ExerciseDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExerciseDetailView(
+            exercise: ExerciseModel(
+                id: "0001",
+                name: "Squat",
+                target: "Legs",
+                bodyPart: "Lower Legs",
+                equipment: "Barbell",
+                category: "Strength",
+                gifFileName: "squat.gif",
+                secondaryMuscles: ["Glutes", "Hamstrings"],
+                instructions: ["Stand with feet shoulder-width apart.", "Lower your body down by bending knees.", "Keep your back straight.", "Push up back to standing position."]
+            ),
+            progressData: [
+                ExerciseSet(setNumber: 1, weight: 100, reps: 10),
+                ExerciseSet(setNumber: 2, weight: 110, reps: 8),
+                ExerciseSet(setNumber: 3, weight: 120, reps: 6)
+            ]
+        )
+    }
+}

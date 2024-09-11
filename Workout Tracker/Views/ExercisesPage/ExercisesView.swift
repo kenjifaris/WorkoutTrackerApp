@@ -28,6 +28,7 @@ struct ExercisesView: View {
 
     // State for selected exercise to display in sheet
     @State private var selectedExercise: ExerciseModel? = nil
+    @State private var progressData: [ExerciseSet] = [] // New state to hold fetched progress data
 
     // Mapping dictionaries to condense categories
     private let equipmentMapping: [String: String] = [
@@ -153,7 +154,11 @@ struct ExercisesView: View {
                 // Exercise List
                 List(filteredExercises) { exercise in
                     Button(action: {
-                        selectedExercise = exercise
+                        // Fetch progress data for the selected exercise
+                        fetchProgressData(for: exercise.id) { progress in
+                            self.progressData = progress
+                            self.selectedExercise = exercise
+                        }
                     }) {
                         ExerciseRowView(exercise: exercise)
                     }
@@ -165,7 +170,7 @@ struct ExercisesView: View {
                 loadExercisesFromFirebase()
             }) // Load from Firestore
             .sheet(item: $selectedExercise) { exercise in
-                ExerciseDetailView(exercise: exercise)
+                ExerciseDetailView(exercise: exercise, progressData: progressData)
             }
         }
     }
@@ -289,6 +294,26 @@ struct ExercisesView: View {
             }
         }
     }
+
+    // Fetch progress data for the selected exercise
+    private func fetchProgressData(for exerciseID: String, completion: @escaping ([ExerciseSet]) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("workout_progress")
+            .whereField("exerciseID", isEqualTo: exerciseID)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching progress data: \(error.localizedDescription)")
+                    completion([]) // Return empty if error occurs
+                    return
+                }
+
+                // Decode the ExerciseSet from each Firestore document
+                let progressData = snapshot?.documents.compactMap { document -> ExerciseSet? in
+                    return try? document.data(as: ExerciseSet.self)
+                } ?? []
+                completion(progressData)
+            }
+    }
 }
 
 struct ExercisesView_Previews: PreviewProvider {
@@ -296,6 +321,3 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView()
     }
 }
-
-
-

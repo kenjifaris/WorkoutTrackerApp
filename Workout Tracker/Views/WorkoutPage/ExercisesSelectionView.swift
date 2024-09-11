@@ -2,12 +2,11 @@
 //  ExercisesSelectionView.swift
 //  Workout Tracker
 //
-//  Created by Kenji  on 9/9/24.
+//  Created by Kenji on 8/19/24.
 //
 
 import SwiftUI
 import FirebaseFirestore
-import SDWebImageSwiftUI
 
 struct ExercisesSelectionView: View {
     // Binding to pass the selected exercises back to ActiveWorkoutView
@@ -192,7 +191,8 @@ struct ExercisesSelectionView: View {
                 loadExercisesFromFirebase()
             }
             .sheet(item: $selectedExercise) { exercise in
-                ExerciseDetailView(exercise: exercise)
+                // Pass an empty array as progressData here
+                ExerciseDetailView(exercise: exercise, progressData: [])
             }
         }
     }
@@ -299,27 +299,27 @@ struct ExercisesSelectionView: View {
         let docRef = db.collection("saved_exercises").document("exercisesview_list")
         
         docRef.getDocument { (document, error) in
-            if let error = error {
-                print("Error fetching exercises: \(error.localizedDescription)")
+            guard let document = document, document.exists else {
+                print("Document does not exist: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
             
-            guard let document = document, let exercisesArray = document.data()?["exercises"] as? [[String: Any]] else {
-                print("No exercises found or data is not an array")
-                return
-            }
-
             do {
-                self.exercises = try exercisesArray.compactMap { dict -> ExerciseModel? in
-                    return try? JSONDecoder().decode(ExerciseModel.self, from: JSONSerialization.data(withJSONObject: dict))
+                if let data = document.data(), let exercisesArray = data["exercises"] as? [[String: Any]] {
+                    self.exercises = try exercisesArray.compactMap { dict -> ExerciseModel? in
+                        return try? JSONDecoder().decode(ExerciseModel.self, from: JSONSerialization.data(withJSONObject: dict))
+                    }
+                    self.filteredExercises = self.exercises
                 }
-                self.filteredExercises = self.exercises
             } catch {
-                print("Failed to decode exercises: \(error.localizedDescription)")
+                print("Failed to decode exercises: \(error)")
             }
         }
     }
 }
 
-
-
+struct ExercisesSelectionView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExercisesSelectionView(selectedExercises: .constant([]))
+    }
+}
