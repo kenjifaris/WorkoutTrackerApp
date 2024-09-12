@@ -220,12 +220,45 @@ struct ActiveWorkoutView: View {
 
     // Fetch progress data for a specific exercise
     private func loadProgressData(for exercise: ExerciseModel, completion: @escaping ([ExerciseSet]) -> Void) {
-        // Simulate loading data from the database or Firestore
-        let exampleData = [
-            ExerciseSet(setNumber: 1, weight: 100, reps: 10),
-            ExerciseSet(setNumber: 2, weight: 110, reps: 8),
-            ExerciseSet(setNumber: 3, weight: 115, reps: 6)
-        ]
-        completion(exampleData) // Replace with actual data loaded from Firestore
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("Error: User ID not found!")
+            completion([]) // Return an empty set if user ID is not found
+            return
+        }
+        
+        print("Fetching workouts for user: \(userId)") // Log the user ID
+        
+        FirestoreService.shared.fetchUserWorkouts(for: userId) { result in
+            switch result {
+            case .success(let workouts):
+                // **Log the number of workouts fetched**
+                print("Successfully fetched \(workouts.count) workouts from Firestore.")
+                
+                var progressSets: [ExerciseSet] = []
+                
+                for workout in workouts {
+                    if let sets = workout.exerciseSets[exercise.id] {
+                        // **Log the sets that are found for the exercise**
+                        print("Found \(sets.count) sets for exercise: \(exercise.name)")
+                        progressSets.append(contentsOf: sets) // Collect all sets for the exercise
+                    }
+                }
+                
+                if progressSets.isEmpty {
+                    print("No progress data found for exercise: \(exercise.name).")
+                }
+                
+                // **Log the progress data being returned**
+                print("Returning \(progressSets.count) progress sets for the chart.")
+                completion(progressSets) // Return all sets across workouts for this exercise
+                
+            case .failure(let error):
+                print("Error fetching progress data: \(error.localizedDescription)")
+                completion([]) // Return an empty array in case of error
+            }
+        }
     }
+
+
+
 }

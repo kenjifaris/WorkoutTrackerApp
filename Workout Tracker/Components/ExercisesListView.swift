@@ -141,7 +141,18 @@ struct ExercisesListView: View {
 
                     // Button to show progress chart for the current exercise
                     Button(action: {
-                        showingProgressChart = true // Trigger the chart display
+                        // Load the progress data first before showing the chart
+                        loadProgressData(exercise) { progress in
+                            progressData = progress
+                            
+                            // Now that progressData is loaded, show the chart
+                            if progressData.isEmpty {
+                                print("No progress data available to show.")
+                            } else {
+                                print("Displaying progress chart for exercise \(exercise.name) with \(progressData.count) sets.")
+                            }
+                            showingProgressChart = true
+                        }
                     }) {
                         Text("Show Progress Chart")
                             .font(.subheadline)
@@ -166,4 +177,5 @@ struct ExercisesListView: View {
         }
     }
 }
+
 

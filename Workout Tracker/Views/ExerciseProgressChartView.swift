@@ -9,37 +9,45 @@ import SwiftUI
 import Charts
 
 struct ExerciseProgressChartView: View {
-    var progressData: [ExerciseSet]  // No need for `exercise: ExerciseModel` anymore
+    var progressData: [ExerciseSet]  // Holds the exercise progress sets
 
     var body: some View {
         VStack {
-            Text("Progress Data")  // Title for context
+            Text("Progress Data")
                 .font(.headline)
                 .padding()
 
             if progressData.isEmpty {
+                // **Highlight**: Show no progress data if the array is empty
                 Text("No progress data available. Start tracking your sets!")
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                Chart(progressData) {
+                // **Highlight**: Chart showing the weight lifted over time (sets)
+                Chart(progressData) { set in
                     LineMark(
-                        x: .value("Set", $0.setNumber),
-                        y: .value("Weight", $0.weight ?? 0) // Default to 0 if weight is nil
+                        x: .value("Set", set.setNumber),     // Set number (x-axis)
+                        y: .value("Weight", set.weight ?? 0) // Weight lifted (y-axis)
                     )
+                    .symbol(Circle())
+                    .interpolationMethod(.catmullRom)  // Smoother lines for the chart
+                    
                     PointMark(
-                        x: .value("Set", $0.setNumber),
-                        y: .value("Weight", $0.weight ?? 0) // Default to 0 if weight is nil
+                        x: .value("Set", set.setNumber),
+                        y: .value("Weight", set.weight ?? 0)
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.blue) // Style for the point marks
                 }
                 .chartYAxis {
                     AxisMarks(position: .leading)
                 }
                 .chartXAxis {
-                    AxisMarks(values: .stride(by: 1))
+                    AxisMarks(values: .stride(by: 1)) // X-axis for each set
                 }
                 .padding()
+                .onAppear {
+                    print("Rendering chart for \(progressData.count) sets.")
+                }
             }
         }
     }
@@ -58,3 +66,6 @@ struct ExerciseProgressChartView_Previews: PreviewProvider {
         )
     }
 }
+
+
+
