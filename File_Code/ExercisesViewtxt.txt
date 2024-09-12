@@ -26,24 +26,6 @@ We’ll make the AdminExerciseManagerView a solid admin tool for managing exerci
 
 
 
-General UI: Open the app in the simulator and navigate through the different views, such as the workout view, exercise details, and charts. Make sure all buttons and interactions work as expected.
 
-Timer and Workout Title:
 
-Start the workout timer and verify it counts time correctly.
-Stop and resume the timer to ensure it functions as expected.
-Adding Exercises and Sets:
 
-Add exercises to your workout and make sure they are listed.
-For each exercise, add sets and check if the sets are displayed with the correct fields (weight, reps).
-Progress Charts:
-
-View the progress chart for each exercise by tapping "Show Progress Chart."
-Ensure that the progress data is rendered correctly for the selected exercise.
-Swipe-to-Delete:
-
-Swipe left on any set and make sure it can be deleted smoothly. Verify that the deleted set is removed from the view and no errors occur.
-Firestore Data:
-
-If you are fetching data from Firestore for progress tracking, ensure the data loads without errors.
-Test by adding new progress data and checking if it reflects in the progress chart.
