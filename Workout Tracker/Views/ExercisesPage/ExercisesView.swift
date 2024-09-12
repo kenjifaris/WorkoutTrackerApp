@@ -16,19 +16,19 @@ struct ExercisesView: View {
     @State private var searchText: String = ""
     @State private var selectedBodyPart: String? = nil
     @State private var selectedEquipment: String? = nil
-    @State private var selectedSplit: String? = nil // New state for split filtering
+    @State private var selectedSplit: String? = nil
     @State private var isLoading = false
 
     // State to manage sheet presentation
     @State private var isBodyPartSheetPresented = false
     @State private var isEquipmentSheetPresented = false
-    @State private var isSplitSheetPresented = false // New state for split presentation
+    @State private var isSplitSheetPresented = false
     @State private var bodyParts: [String] = []
     @State private var equipments: [String] = []
 
     // State for selected exercise to display in sheet
     @State private var selectedExercise: ExerciseModel? = nil
-    @State private var progressData: [ExerciseSet] = [] // New state to hold fetched progress data
+    @State private var progressData: [ExerciseSet] = [] // Holds fetched progress data
 
     // Mapping dictionaries to condense categories
     private let equipmentMapping: [String: String] = [
@@ -51,9 +51,9 @@ struct ExercisesView: View {
 
     // Define the mapping for workout splits
     private let splitMapping: [String: [String]] = [
-        "Push": ["Pectorals", "Shoulders", "Triceps", "Delts", "Lats" ], // Push day includes chest, shoulders, and triceps
-        "Pull": ["Back", "Biceps", "Upper Arms", "Traps", "Upper Back", "Lower Back" ],                // Pull day includes back and biceps
-        "Legs": ["Quads", "Hamstrings", "Calves", "Glutes", "Lower Legs", "Upper Legs"] // Leg day includes legs
+        "Push": ["Pectorals", "Shoulders", "Triceps", "Delts", "Lats"],
+        "Pull": ["Back", "Biceps", "Upper Arms", "Traps", "Upper Back", "Lower Back"],
+        "Legs": ["Quads", "Hamstrings", "Calves", "Glutes", "Lower Legs", "Upper Legs"]
     ]
 
     var body: some View {
@@ -164,13 +164,18 @@ struct ExercisesView: View {
                     }
                     .buttonStyle(PlainButtonStyle()) // To prevent default button styling
                 }
-            }
-            .navigationTitle("Exercises")
-            .onAppear(perform: {
-                loadExercisesFromFirebase()
-            }) // Load from Firestore
-            .sheet(item: $selectedExercise) { exercise in
-                ExerciseDetailView(exercise: exercise, progressData: progressData)
+                .sheet(item: $selectedExercise) { exercise in
+                    ExerciseDetailView(
+                        exercise: exercise,
+                        loadProgressData: { selectedExercise, completion in
+                            fetchProgressData(for: selectedExercise.id, completion: completion)
+                        }
+                    )
+                }
+                .navigationTitle("Exercises")
+                .onAppear {
+                    loadExercisesFromFirebase()
+                }
             }
         }
     }

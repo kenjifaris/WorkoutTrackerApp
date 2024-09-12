@@ -191,8 +191,13 @@ struct ExercisesSelectionView: View {
                 loadExercisesFromFirebase()
             }
             .sheet(item: $selectedExercise) { exercise in
-                // Pass an empty array as progressData here
-                ExerciseDetailView(exercise: exercise, progressData: [])
+                // Use the correct closure type for progress data loading
+                ExerciseDetailView(
+                    exercise: exercise,
+                    loadProgressData: { selectedExercise, completion in
+                        fetchProgressData(for: selectedExercise.id, completion: completion)
+                    }
+                )
             }
         }
     }
@@ -315,6 +320,26 @@ struct ExercisesSelectionView: View {
                 print("Failed to decode exercises: \(error)")
             }
         }
+    }
+
+    // Fetch progress data for the selected exercise (Firestore example)
+    private func fetchProgressData(for exerciseID: String, completion: @escaping ([ExerciseSet]) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("workout_progress")
+            .whereField("exerciseID", isEqualTo: exerciseID)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching progress data: \(error.localizedDescription)")
+                    completion([]) // Return empty if error occurs
+                    return
+                }
+
+                // Decode the ExerciseSet from each Firestore document
+                let progressData = snapshot?.documents.compactMap { document -> ExerciseSet? in
+                    return try? document.data(as: ExerciseSet.self)
+                } ?? []
+                completion(progressData)
+            }
     }
 }
 

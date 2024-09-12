@@ -66,6 +66,3 @@ struct ExerciseProgressChartView_Previews: PreviewProvider {
         )
     }
 }
-
-
-

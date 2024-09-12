@@ -1,3 +1,4 @@
+//
 //  ActiveWorkoutView.swift
 //  Workout Tracker
 
@@ -106,7 +107,12 @@ struct ActiveWorkoutView: View {
             )
         }
         .sheet(item: $selectedExerciseForDetail) { exercise in
-            ExerciseDetailView(exercise: exercise, progressData: progressData)
+            ExerciseDetailView(
+                exercise: exercise,
+                loadProgressData: { selectedExercise, completion in
+                    loadProgressData(for: selectedExercise, completion: completion)
+                }
+            )
         }
         .actionSheet(item: $selectedExerciseForActionSheet) { exercise in
             ActionSheet(
@@ -258,7 +264,5 @@ struct ActiveWorkoutView: View {
             }
         }
     }
-
-
 
 }

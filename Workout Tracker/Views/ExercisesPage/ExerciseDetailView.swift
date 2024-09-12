@@ -11,13 +11,16 @@ import SDWebImageSwiftUI
 
 struct ExerciseDetailView: View {
     var exercise: ExerciseModel
-    var progressData: [ExerciseSet] // ExerciseSet data for the charts
+    @State private var progressData: [ExerciseSet] = [] // State for chart data
+    @State private var isLoadingProgressData = true // To track loading state
+
+    var loadProgressData: (ExerciseModel, @escaping ([ExerciseSet]) -> Void) -> Void // Function to load progress data
 
     var body: some View {
         VStack {
             // TabView for switching between different sections (About, Charts, etc.)
             TabView {
-                
+
                 // About Tab (GIF + exercise details)
                 ScrollView {
                     VStack(alignment: .leading) {
@@ -93,14 +96,27 @@ struct ExerciseDetailView: View {
                         .font(.headline)
                         .padding(.top)
 
-                    // Display the progress chart
-                    if progressData.isEmpty {
-                        Text("No progress data available. Start tracking your sets!")
-                            .foregroundColor(.gray)
+                    if isLoadingProgressData {
+                        // Show a loading indicator while data is being fetched
+                        ProgressView("Loading progress data...")
                             .padding()
                     } else {
-                        // Now only pass progressData to ExerciseProgressChartView
-                        ExerciseProgressChartView(progressData: progressData)
+                        // Display the progress chart
+                        if progressData.isEmpty {
+                            Text("No progress data available. Start tracking your sets!")
+                                .foregroundColor(.gray)
+                                .padding()
+                        } else {
+                            // Pass progressData to ExerciseProgressChartView
+                            ExerciseProgressChartView(progressData: progressData)
+                        }
+                    }
+                }
+                .onAppear {
+                    // Load progress data when the Charts tab appears
+                    loadProgressData(exercise) { fetchedProgress in
+                        self.progressData = fetchedProgress
+                        self.isLoadingProgressData = false // Stop loading indicator
                     }
                 }
                 .tabItem {
@@ -145,12 +161,14 @@ struct ExerciseDetailView_Previews: PreviewProvider {
                 secondaryMuscles: ["Glutes", "Hamstrings"],
                 instructions: ["Stand with feet shoulder-width apart.", "Lower your body down by bending knees.", "Keep your back straight.", "Push up back to standing position."]
             ),
-            progressData: [
-                ExerciseSet(setNumber: 1, weight: 100, reps: 10),
-                ExerciseSet(setNumber: 2, weight: 110, reps: 8),
-                ExerciseSet(setNumber: 3, weight: 120, reps: 6)
-            ]
+            loadProgressData: { exercise, completion in
+                // Mock progress data for testing
+                completion([
+                    ExerciseSet(setNumber: 1, weight: 100, reps: 10),
+                    ExerciseSet(setNumber: 2, weight: 110, reps: 8),
+                    ExerciseSet(setNumber: 3, weight: 120, reps: 6)
+                ])
+            }
         )
     }
 }
-
