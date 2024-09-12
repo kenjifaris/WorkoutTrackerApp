@@ -1,9 +1,4 @@
-//
 //  ExerciseSet.swift
-//  Workout Tracker
-//
-//  Created by Kenji on 9/9/24.
-//
 
 import Foundation
 
@@ -13,11 +8,9 @@ struct ExerciseSet: Identifiable, Codable {
     var weight: Double?
     var reps: Int?
 
-    // Temporary strings to bind with TextFields (can be converted to weight/reps on save)
     var weightString: String = ""
     var repsString: String = ""
 
-    // Add initializer to map weight and reps strings to Double and Int
     init(setNumber: Int, weight: Double? = nil, reps: Int? = nil) {
         self.setNumber = setNumber
         self.weight = weight
@@ -26,7 +19,12 @@ struct ExerciseSet: Identifiable, Codable {
         self.repsString = reps != nil ? "\(reps!)" : ""
     }
 
-    // Convert to Firestore dictionary
+    // Convert weight and reps strings to their numeric equivalents
+    mutating func convertStringsToValues() {
+        weight = Double(weightString) ?? 0
+        reps = Int(repsString) ?? 0
+    }
+
     func toDictionary() -> [String: Any] {
         return [
             "setNumber": setNumber,
@@ -35,15 +33,10 @@ struct ExerciseSet: Identifiable, Codable {
         ]
     }
 
-    // Initialize ExerciseSet from Firestore dictionary
     init?(from dictionary: [String: Any]) {
-        guard let setNumber = dictionary["setNumber"] as? Int else {
-            return nil
-        }
-        
+        guard let setNumber = dictionary["setNumber"] as? Int else { return nil }
         let weight = dictionary["weight"] as? Double
         let reps = dictionary["reps"] as? Int
-        
         self.init(setNumber: setNumber, weight: weight, reps: reps)
     }
 }

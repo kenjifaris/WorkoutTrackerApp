@@ -145,18 +145,36 @@ struct ActiveWorkoutView: View {
         }
     }
 
-    // Function to remove a set and re-index remaining sets
-    private func removeSet(for exercise: ExerciseModel, at index: Int) {
-        guard var sets = exerciseSets[exercise.id] else { return }
-        sets.remove(at: index)
-        
-        // Re-index the sets after deletion
-        for i in 0..<sets.count {
-            sets[i].setNumber = i + 1
+    // MARK: Highlighted Changes Begin
+
+    // Finish workout action and save it to Firestore
+    private func finishWorkout() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        // **Highlight: Convert the weight and reps strings to numbers before saving**
+        for (exerciseId, sets) in exerciseSets {
+            for i in 0..<sets.count {
+                exerciseSets[exerciseId]?[i].convertStringsToValues() // Ensure conversion
+            }
         }
-        
-        exerciseSets[exercise.id] = sets
+
+        let workout = Workout(
+            id: UUID().uuidString, // Unique identifier for the workout
+            workoutName: workoutName,
+            workoutDuration: workoutDuration,
+            exerciseSets: exerciseSets // Pass the dictionary of exerciseSets
+        )
+
+        FirestoreService.shared.saveWorkout(workout, for: userId) { error in
+            if let error = error {
+                print("Error saving workout: \(error.localizedDescription)")
+            } else {
+                isSavingWorkout = true // Show alert after saving
+            }
+        }
     }
+
+    // MARK: Highlighted Changes End
 
     // Toggle timer start/stop
     private func toggleTimer() {
@@ -181,31 +199,23 @@ struct ActiveWorkoutView: View {
         }
     }
 
+    // Function to remove a set and re-index remaining sets
+    private func removeSet(for exercise: ExerciseModel, at index: Int) {
+        guard var sets = exerciseSets[exercise.id] else { return }
+        sets.remove(at: index)
+        
+        // Re-index the sets after deletion
+        for i in 0..<sets.count {
+            sets[i].setNumber = i + 1
+        }
+        
+        exerciseSets[exercise.id] = sets
+    }
+
     // Remove exercise from the list
     private func removeExercise(_ exercise: ExerciseModel) {
         selectedExercises.removeAll { $0.id == exercise.id }
         exerciseSets[exercise.id] = nil
-    }
-
-    // Finish workout action and save it to Firestore
-    private func finishWorkout() {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-
-        // Create a new workout with a unique ID
-        let workout = Workout(
-            id: UUID().uuidString, // Unique identifier for the workout
-            workoutName: workoutName,
-            workoutDuration: workoutDuration,
-            exerciseSets: exerciseSets // Pass the dictionary of exerciseSets
-        )
-
-        FirestoreService.shared.saveWorkout(workout, for: userId) { error in
-            if let error = error {
-                print("Error saving workout: \(error.localizedDescription)")
-            } else {
-                isSavingWorkout = true // Show alert after saving
-            }
-        }
     }
 
     // Fetch progress data for a specific exercise
